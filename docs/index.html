@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yamiy — Mac の画面を、真っ暗なまま止めずに保つ</title>
+<meta name="description" content="Yamiy は Mac の内蔵ディスプレイを物理的に真っ暗に保ちながら、画面スリープはさせないメニューバーアプリです。AI エージェントや自動処理を走らせている間の覗き見対策に。">
+<style>
+  :root {
+    --bg: #141417;
+    --panel: #1e1e23;
+    --line: rgba(255,255,255,.09);
+    --text: #ececf1;
+    --sub: #a7a7b3;
+    --accent: #8ab4ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    line-height: 1.75;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+  header { padding: 72px 0 8px; text-align: center; }
+  h1 { font-size: 44px; margin: 0 0 6px; letter-spacing: .02em; }
+  .tagline { color: var(--sub); font-size: 17px; margin: 0; }
+  .hero-img { display: block; width: 100%; max-width: 680px; margin: 36px auto 8px; border-radius: 12px; }
+  h2 { font-size: 22px; margin: 52px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  p { margin: 10px 0; }
+  .sub { color: var(--sub); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; font-size: 13.5px; color: var(--sub); }
+  ol, ul { padding-left: 1.4em; }
+  li { margin: 6px 0; }
+  code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; }
+  .cta { text-align: center; margin: 56px 0 8px; }
+  .cta a {
+    display: inline-block; padding: 12px 28px; border-radius: 999px;
+    background: var(--text); color: #141417; text-decoration: none; font-weight: 600;
+  }
+  .cta a:hover { background: #fff; }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13px; text-align: center; }
+  a { color: var(--accent); }
+  .en { margin-top: 72px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Yamiy</h1>
+  <p class="tagline">Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリ</p>
+</header>
+
+<img class="hero-img" src="images/menu.png" alt="Yamiy のパネル。状態は真っ暗（ステルス）と表示されている">
+
+<h2>これは何か</h2>
+<p>AI エージェントや自動処理を Mac で常時走らせていると、画面はつけっぱなしになります。中身を他人に見られたくない。でもディスプレイをスリープさせると、リモート操作や自動処理の都合が悪くなる場面があります。</p>
+<p>Yamiy はその間で使います。明るさを最低に固定し、明るさキーも効かなくして、画面を物理的に真っ暗に保ちます。画面そのものは起きているので、キャプチャもリモート操作もそのまま動きます。本人が Touch ID でロックを解除したときだけ画面が戻り、5 分触らなければ自動で真っ暗に戻ります。</p>
+
+<div class="cards">
+  <div class="card">
+    <h3>明るさを 0 に保持</h3>
+    <p>自動調節などに押し戻されても、0.15 秒ごとに最低へ戻し続けます。</p>
+  </div>
+  <div class="card">
+    <h3>明るさキーを無効化</h3>
+    <p>キーを入口で付け替えるので、押しても一瞬たりとも画面は光りません。</p>
+  </div>
+  <div class="card">
+    <h3>本人モードは解除のときだけ</h3>
+    <p>入口は画面ロック解除（Touch ID／パスワード）だけ。無操作 5 分で自動復帰します。</p>
+  </div>
+  <div class="card">
+    <h3>画面スリープはしない</h3>
+    <p>キャプチャやリモート操作は明るさと無関係に動き続けます（実測済み）。</p>
+  </div>
+</div>
+
+<h2>使い方</h2>
+<ol>
+  <li>起動するとステルス状態（真っ暗＋明るさキー無効）になります</li>
+  <li>本人モードにする: Touch ID ボタンで画面をロックし、指紋で解除する</li>
+  <li>ステルスに戻す: もう一度ロックする。または 5 分間何も触らない</li>
+  <li>終了する: パネルの「終了」。キーと明るさは元に戻ります</li>
+</ol>
+<p class="sub">パネルの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうかを変更できます。</p>
+
+<h2>インストール</h2>
+<p>ソースからビルドします（Xcode コマンドラインツールが必要です）。</p>
+<pre>git clone https://github.com/snowkiss13/yamiy.git
+cd yamiy
+./build.sh
+open build/Yamiy.app</pre>
+<p class="sub">ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。署名していないビルドは初回起動時に Gatekeeper で止められます。その場合は Finder で右クリック → 開く を選んでください。</p>
+<p class="sub">動作環境: Apple Silicon Mac、macOS 14 以降（開発と確認は macOS 27）。明るさの制御に DisplayServices の私的 API を使うため、Mac App Store では配布できません。</p>
+
+<div class="cta">
+  <a href="https://github.com/snowkiss13/yamiy">GitHub で見る</a>
+</div>
+
+<div class="en">
+<h2>What is Yamiy? (English)</h2>
+<p>If you run AI agents or automations on your Mac around the clock, the display stays on. You do not want anyone peeking at what is on it — but putting the display to sleep gets in the way of remote control and automation.</p>
+<p>Yamiy sits in between. It holds the brightness at zero and disables the brightness keys, so the panel is physically dark while the machine stays fully awake: screen capture and remote control keep working, because brightness and the framebuffer are independent (verified). The screen comes back only when you unlock it with Touch ID, and it goes dark again by itself after five minutes without input.</p>
+<p>Yamiy is open source under the MIT License. Build it from source with <code>./build.sh</code> and see the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses the private DisplayServices API, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
+</div>
+
+<footer>
+  Yamiy — MIT License — <a href="https://github.com/snowkiss13/yamiy">github.com/snowkiss13/yamiy</a>
+</footer>
+
+</div>
+</body>
+</html>
