@@ -15,11 +15,13 @@ Yamiy はその間で使います。明るさを最低に固定し、明るさ�
 
 ### 使い方
 
-起動するとステルス状態（真っ暗＋明るさキー無効）になります。メニューバーの「Yamiy」から現在の状態が見られます。
+起動するとステルス状態（真っ暗＋明るさキー無効）になります。メニューバーの「Yamiy」を押すと小さなパネルが開いて、現在の状態が見られます。
 
 - 本人モードにする: Touch ID ボタンで画面をロックし、指紋で解除する
 - ステルスに戻す: もう一度ロックする。または 5 分間何も触らない
-- 終了する: メニューから「Yamiy を終了」。キーと明るさは元に戻ります
+- 終了する: パネルの「終了」。キーと明るさは元に戻ります
+
+パネルの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうかを変更できます。
 
 ### 仕組み
 
@@ -56,11 +58,13 @@ Yamiy sits in between. It holds the brightness at zero and disables the brightne
 
 ### Usage
 
-Yamiy starts in stealth mode: dark screen, brightness keys disabled. The menu-bar item shows the current state.
+Yamiy starts in stealth mode: dark screen, brightness keys disabled. Clicking "Yamiy" in the menu bar opens a small panel with the current state.
 
 - Enter owner mode: lock the screen with the Touch ID button, then unlock with your fingerprint
 - Return to stealth: lock again — or just leave the machine alone for five minutes
-- Quit: choose "Quit Yamiy" from the menu. Keys and brightness are restored
+- Quit: press "終了" (Quit) in the panel. Keys and brightness are restored
+
+From "設定を開く…" (Open Settings…) in the panel you can change the owner-mode brightness, the idle time before the screen goes dark again, and whether Yamiy starts at login.
 
 ### How it works
 

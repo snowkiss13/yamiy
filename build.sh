@@ -6,6 +6,6 @@ APP="build/Yamiy.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 swiftc -O -o "$APP/Contents/MacOS/Yamiy" Sources/main.swift \
-    -framework AppKit -framework CoreGraphics
+    -framework AppKit -framework CoreGraphics -framework ServiceManagement
 cp Info.plist "$APP/Contents/Info.plist"
 echo "Built $APP"
