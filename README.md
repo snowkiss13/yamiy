@@ -1,5 +1,7 @@
 # Yamiy
 
+<p align="center"><img src="docs/images/icon-1024.png" width="128" alt="Yamiy のロゴ（三日月）"></p>
+
 Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリです。
 A menu-bar app that keeps your Mac's display physically dark — without ever putting it to sleep.
 
@@ -33,16 +35,16 @@ Yamiy はその間で使います。明るさを最低に固定し、明るさ�
 
 ### インストール
 
-ソースからビルドします（Xcode コマンドラインツールが必要です）。
+[Releases](https://github.com/snowkiss13/yamiy/releases/latest) から `Yamiy-0.2.0.zip` をダウンロードして展開し、`Yamiy.app` をアプリケーションフォルダへ移すだけです。
+
+初回だけ、Finder で右クリック → 開く を選んでください。開発者署名（公証）のない個人配布のため、通常のダブルクリックでは Gatekeeper に止められます。ログイン時の自動起動は、アプリ内の設定でオンにできます。
+
+ソースからビルドする場合（Xcode コマンドラインツールが必要です）:
 
 ```sh
 ./build.sh
 open build/Yamiy.app
 ```
-
-ログイン時に自動で起動させたい場合は、`build/Yamiy.app` をアプリケーションフォルダに置いて、システム設定 → 一般 → ログイン項目 に追加してください。
-
-署名していないビルドは初回起動時に Gatekeeper で止められます。その場合は Finder で右クリック → 開く を選んでください。
 
 ### 動作環境
 
@@ -76,16 +78,16 @@ Because it uses a private API, Yamiy cannot be distributed on the Mac App Store.
 
 ### Install
 
-Build from source (requires the Xcode command line tools):
+Download `Yamiy-0.2.0.zip` from [Releases](https://github.com/snowkiss13/yamiy/releases/latest), unzip it, and move `Yamiy.app` to your Applications folder.
+
+On first launch, right-click the app in Finder and choose Open: the app is ad-hoc signed (not notarized), so Gatekeeper stops a plain double-click. Launch at login can be enabled in the app's settings.
+
+Or build from source (requires the Xcode command line tools):
 
 ```sh
 ./build.sh
 open build/Yamiy.app
 ```
-
-To start Yamiy at login, move `build/Yamiy.app` to your Applications folder and add it under System Settings → General → Login Items.
-
-The build is unsigned, so Gatekeeper will stop the first launch. Right-click the app in Finder and choose Open.
 
 ### Requirements
 

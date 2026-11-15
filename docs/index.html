@@ -53,6 +53,7 @@
 <div class="wrap">
 
 <header>
+  <img src="images/icon-1024.png" width="112" height="112" alt="Yamiy のロゴ（三日月）" style="border-radius: 26px;">
   <h1>Yamiy</h1>
   <p class="tagline">Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリ</p>
 </header>
@@ -92,23 +93,24 @@
 <p class="sub">パネルの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうかを変更できます。</p>
 
 <h2>インストール</h2>
-<p>ソースからビルドします（Xcode コマンドラインツールが必要です）。</p>
-<pre>git clone https://github.com/snowkiss13/yamiy.git
-cd yamiy
-./build.sh
-open build/Yamiy.app</pre>
-<p class="sub">ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。署名していないビルドは初回起動時に Gatekeeper で止められます。その場合は Finder で右クリック → 開く を選んでください。</p>
+<ol>
+  <li><a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.0/Yamiy-0.2.0.zip">Yamiy-0.2.0.zip</a> をダウンロードして展開する</li>
+  <li><code>Yamiy.app</code> を「アプリケーション」フォルダへ移す</li>
+  <li>初回だけ、Finder で右クリック → 開く を選ぶ</li>
+</ol>
+<p class="sub">ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。開発者署名（公証）のない個人配布のため、初回は Gatekeeper で止められますが、手順 3 で開けます。ソースからビルドする場合は <code>git clone</code> して <code>./build.sh</code> です（Xcode コマンドラインツールが必要）。</p>
 <p class="sub">動作環境: Apple Silicon Mac、macOS 14 以降（開発と確認は macOS 27）。明るさの制御に DisplayServices の私的 API を使うため、Mac App Store では配布できません。</p>
 
 <div class="cta">
-  <a href="https://github.com/snowkiss13/yamiy">GitHub で見る</a>
+  <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.0/Yamiy-0.2.0.zip">ダウンロード（v0.2.0）</a>
+  <a href="https://github.com/snowkiss13/yamiy" style="background: transparent; color: var(--text); border: 1px solid var(--line); margin-left: 8px;">GitHub で見る</a>
 </div>
 
 <div class="en">
 <h2>What is Yamiy? (English)</h2>
 <p>If you run AI agents or automations on your Mac around the clock, the display stays on. You do not want anyone peeking at what is on it — but putting the display to sleep gets in the way of remote control and automation.</p>
 <p>Yamiy sits in between. It holds the brightness at zero and disables the brightness keys, so the panel is physically dark while the machine stays fully awake: screen capture and remote control keep working, because brightness and the framebuffer are independent (verified). The screen comes back only when you unlock it with Touch ID, and it goes dark again by itself after five minutes without input.</p>
-<p>Yamiy is open source under the MIT License. Build it from source with <code>./build.sh</code> and see the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses the private DisplayServices API, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
+<p>Yamiy is open source under the MIT License. Download the app from <a href="https://github.com/snowkiss13/yamiy/releases/latest">Releases</a> (right-click → Open on first launch; it is ad-hoc signed, not notarized), or build it from source with <code>./build.sh</code>. See the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses the private DisplayServices API, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
 </div>
 
 <footer>
