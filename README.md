@@ -42,7 +42,7 @@ Yamiy はその間で使います。明るさを最低に固定し、明るさ�
 
 [Releases](https://github.com/snowkiss13/yamiy/releases/latest) から `Yamiy-0.3.0.zip` をダウンロードして展開し、`Yamiy.app` をアプリケーションフォルダへ移すだけです。
 
-Developer ID で署名済みですが、公証はまだ受けていないため、初回だけ Finder で右クリック → 開く を選んでください。通常のダブルクリックでは Gatekeeper に止められます。明るさキーを完全に止めるには、システム設定 → プライバシーとセキュリティ → アクセシビリティ で Yamiy を許可してください。ログイン時の自動起動は、アプリ内の設定でオンにできます。
+Developer ID で署名し、Apple の公証も受けています。そのままダブルクリックで開けます。明るさキーを完全に止めるには、システム設定 → プライバシーとセキュリティ → アクセシビリティ で Yamiy を許可してください。ログイン時の自動起動は、アプリ内の設定でオンにできます。
 
 ソースからビルドする場合（Xcode コマンドラインツールが必要です）:
 
@@ -87,7 +87,7 @@ Because it uses private APIs, Yamiy cannot be distributed on the Mac App Store. 
 
 Download `Yamiy-0.3.0.zip` from [Releases](https://github.com/snowkiss13/yamiy/releases/latest), unzip it, and move `Yamiy.app` to your Applications folder.
 
-The app is signed with a Developer ID but not notarized yet, so on first launch, right-click the app in Finder and choose Open: Gatekeeper stops a plain double-click. To fully block the brightness keys, allow Yamiy under System Settings → Privacy & Security → Accessibility. Launch at login can be enabled in the app's settings.
+The app is signed with a Developer ID and notarized by Apple, so a plain double-click opens it. To fully block the brightness keys, allow Yamiy under System Settings → Privacy & Security → Accessibility. Launch at login can be enabled in the app's settings.
 
 Or build from source (requires the Xcode command line tools):
 
