@@ -26,7 +26,7 @@ Yamiy はその間で使います。明るさを最低に固定し、明るさ�
 - ステルスに戻す: もう一度ロックする。フタを閉じる。または 5 分間何も触らない
 - 終了する: メニューの「Yamiy を終了」。キーと明るさと外部ディスプレイは元に戻ります
 
-メニューの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうか、外部ディスプレイも無効にするかどうかを変更できます。
+メニューの「設定を開く…」からは、macOS 標準の形の設定画面で、本人モードの明るさ、真っ暗に戻るまでの無操作時間（自動で戻るかどうかも選べます）、ログイン時に起動するかどうか、外部ディスプレイも無効にするかどうか、フタを閉じたら真っ暗にするかどうか、明るさキーを無効にするかどうか、前回の明るさを引き継ぐかどうかを変更できます。メニューと設定の表示言語は、システムの言語に合わせて日本語と英語に切り替わります。
 
 ### 仕組み
 
@@ -40,7 +40,7 @@ Yamiy はその間で使います。明るさを最低に固定し、明るさ�
 
 ### インストール
 
-[Releases](https://github.com/snowkiss13/yamiy/releases/latest) から `Yamiy-0.2.4.zip` をダウンロードして展開し、`Yamiy.app` をアプリケーションフォルダへ移すだけです。
+[Releases](https://github.com/snowkiss13/yamiy/releases/latest) から `Yamiy-0.3.0.zip` をダウンロードして展開し、`Yamiy.app` をアプリケーションフォルダへ移すだけです。
 
 Developer ID で署名済みですが、公証はまだ受けていないため、初回だけ Finder で右クリック → 開く を選んでください。通常のダブルクリックでは Gatekeeper に止められます。明るさキーを完全に止めるには、システム設定 → プライバシーとセキュリティ → アクセシビリティ で Yamiy を許可してください。ログイン時の自動起動は、アプリ内の設定でオンにできます。
 
@@ -69,9 +69,9 @@ Yamiy starts in stealth mode: dark screen, brightness keys disabled. Clicking th
 
 - Enter owner mode: lock the screen with the Touch ID button, then unlock with your fingerprint
 - Return to stealth: lock again, close the lid — or just leave the machine alone for five minutes
-- Quit: choose "Yamiy を終了" (Quit Yamiy) in the menu. Keys, brightness and external displays are restored
+- Quit: choose "Quit Yamiy" in the menu. Keys, brightness and external displays are restored
 
-From "設定を開く…" (Open Settings…) in the menu you can change the owner-mode brightness, the idle time before the screen goes dark again, whether Yamiy starts at login, and whether external displays are disabled as well.
+From "Open Settings…" in the menu, a standard macOS settings window lets you change the owner-mode brightness, the idle time before the screen goes dark again (and whether it returns automatically at all), whether Yamiy starts at login, whether external displays are disabled as well, whether closing the lid enters stealth, whether the brightness keys are blocked, and whether the last brightness is carried over. The menu and settings follow the system language, in Japanese or English.
 
 ### How it works
 
@@ -85,7 +85,7 @@ Because it uses private APIs, Yamiy cannot be distributed on the Mac App Store. 
 
 ### Install
 
-Download `Yamiy-0.2.4.zip` from [Releases](https://github.com/snowkiss13/yamiy/releases/latest), unzip it, and move `Yamiy.app` to your Applications folder.
+Download `Yamiy-0.3.0.zip` from [Releases](https://github.com/snowkiss13/yamiy/releases/latest), unzip it, and move `Yamiy.app` to your Applications folder.
 
 The app is signed with a Developer ID but not notarized yet, so on first launch, right-click the app in Finder and choose Open: Gatekeeper stops a plain double-click. To fully block the brightness keys, allow Yamiy under System Settings → Privacy & Security → Accessibility. Launch at login can be enabled in the app's settings.
 
