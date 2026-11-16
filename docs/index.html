@@ -55,14 +55,15 @@
 <header>
   <img src="images/icon-1024.png" width="112" height="112" alt="Yamiy のロゴ（三日月）" style="border-radius: 26px;">
   <h1>Yamiy</h1>
-  <p class="tagline">Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリ</p>
+  <p class="tagline">MacBook を AI に明け渡したい、すべての人へ。</p>
+  <p class="tagline" style="font-size: 14px;">Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリ</p>
 </header>
 
-<img class="hero-img" src="images/menu.png" alt="Yamiy のパネル。状態は真っ暗（ステルス）と表示されている">
+<img class="hero-img" src="images/menu.png" alt="Yamiy のメニュー。状態は真っ暗（ステルス）と表示されている">
 
 <h2>これは何か</h2>
 <p>AI エージェントや自動処理を Mac で常時走らせていると、画面はつけっぱなしになります。中身を他人に見られたくない。でもディスプレイをスリープさせると、リモート操作や自動処理の都合が悪くなる場面があります。</p>
-<p>Yamiy はその間で使います。明るさを最低に固定し、明るさキーも効かなくして、画面を物理的に真っ暗に保ちます。画面そのものは起きているので、キャプチャもリモート操作もそのまま動きます。本人が Touch ID でロックを解除したときだけ画面が戻り、5 分触らなければ自動で真っ暗に戻ります。</p>
+<p>Yamiy はその間で使います。明るさを最低に固定し、明るさキーも効かなくして、画面を物理的に真っ暗に保ちます。外部ディスプレイがつながっていれば、そちらも無効にできます。画面そのものは起きているので、キャプチャもリモート操作もそのまま動きます。本人が Touch ID でロックを解除したときだけ画面が戻り、5 分触らなければ自動で真っ暗に戻ります。フタを閉じれば、5 分を待たずその場で真っ暗になります。</p>
 
 <div class="cards">
   <div class="card">
@@ -71,7 +72,15 @@
   </div>
   <div class="card">
     <h3>明るさキーを無効化</h3>
-    <p>キーを入口で付け替えるので、押しても一瞬たりとも画面は光りません。</p>
+    <p>内蔵キーボードのキーはイベントタップで受けて捨て、外付け向けのリマップも併用。押しても画面は光りません（アクセシビリティ許可が必要）。</p>
+  </div>
+  <div class="card">
+    <h3>外部ディスプレイも無効化</h3>
+    <p>設定でオンにすると、ステルス中は外部ディスプレイをオフラインにします。途中でつないでも、その場で無効になります。</p>
+  </div>
+  <div class="card">
+    <h3>フタを閉じたら即、真っ暗</h3>
+    <p>5 分の無操作を待たず、フタを閉じた瞬間にステルスへ入ります。開けても、解除するまで暗いままです。</p>
   </div>
   <div class="card">
     <h3>本人モードは解除のときだけ</h3>
@@ -87,30 +96,30 @@
 <ol>
   <li>起動するとステルス状態（真っ暗＋明るさキー無効）になります</li>
   <li>本人モードにする: Touch ID ボタンで画面をロックし、指紋で解除する</li>
-  <li>ステルスに戻す: もう一度ロックする。または 5 分間何も触らない</li>
-  <li>終了する: パネルの「終了」。キーと明るさは元に戻ります</li>
+  <li>ステルスに戻す: もう一度ロックする。フタを閉じる。または 5 分間何も触らない</li>
+  <li>終了する: メニューの「Yamiy を終了」。キーと明るさと外部ディスプレイは元に戻ります</li>
 </ol>
-<p class="sub">パネルの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうかを変更できます。</p>
+<p class="sub">メニューの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうか、外部ディスプレイも無効にするかどうかを変更できます。</p>
 
 <h2>インストール</h2>
 <ol>
-  <li><a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.0/Yamiy-0.2.0.zip">Yamiy-0.2.0.zip</a> をダウンロードして展開する</li>
+  <li><a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.4/Yamiy-0.2.4.zip">Yamiy-0.2.4.zip</a> をダウンロードして展開する</li>
   <li><code>Yamiy.app</code> を「アプリケーション」フォルダへ移す</li>
   <li>初回だけ、Finder で右クリック → 開く を選ぶ</li>
 </ol>
-<p class="sub">ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。開発者署名（公証）のない個人配布のため、初回は Gatekeeper で止められますが、手順 3 で開けます。ソースからビルドする場合は <code>git clone</code> して <code>./build.sh</code> です（Xcode コマンドラインツールが必要）。</p>
+<p class="sub">Developer ID で署名済みですが公証はまだ受けていないため、初回は Gatekeeper で止められますが、手順 3 で開けます。明るさキーを完全に止めるには、システム設定 → プライバシーとセキュリティ → アクセシビリティ で Yamiy を許可してください。ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。ソースからビルドする場合は <code>git clone</code> して <code>./build.sh</code> です（Xcode コマンドラインツールが必要）。</p>
 <p class="sub">動作環境: Apple Silicon Mac、macOS 14 以降（開発と確認は macOS 27）。明るさの制御に DisplayServices の私的 API を使うため、Mac App Store では配布できません。</p>
 
 <div class="cta">
-  <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.0/Yamiy-0.2.0.zip">ダウンロード（v0.2.0）</a>
+  <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.4/Yamiy-0.2.4.zip">ダウンロード（v0.2.4）</a>
   <a href="https://github.com/snowkiss13/yamiy" style="background: transparent; color: var(--text); border: 1px solid var(--line); margin-left: 8px;">GitHub で見る</a>
 </div>
 
 <div class="en">
 <h2>What is Yamiy? (English)</h2>
 <p>If you run AI agents or automations on your Mac around the clock, the display stays on. You do not want anyone peeking at what is on it — but putting the display to sleep gets in the way of remote control and automation.</p>
-<p>Yamiy sits in between. It holds the brightness at zero and disables the brightness keys, so the panel is physically dark while the machine stays fully awake: screen capture and remote control keep working, because brightness and the framebuffer are independent (verified). The screen comes back only when you unlock it with Touch ID, and it goes dark again by itself after five minutes without input.</p>
-<p>Yamiy is open source under the MIT License. Download the app from <a href="https://github.com/snowkiss13/yamiy/releases/latest">Releases</a> (right-click → Open on first launch; it is ad-hoc signed, not notarized), or build it from source with <code>./build.sh</code>. See the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses the private DisplayServices API, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
+<p>Yamiy sits in between. It holds the brightness at zero and disables the brightness keys, so the panel is physically dark while the machine stays fully awake: screen capture and remote control keep working, because brightness and the framebuffer are independent (verified). External displays can be taken offline too. The screen comes back only when you unlock it with Touch ID, and it goes dark again by itself after five minutes without input — or the moment you close the lid.</p>
+<p>Yamiy is open source under the MIT License. Download the app from <a href="https://github.com/snowkiss13/yamiy/releases/latest">Releases</a> (right-click → Open on first launch; it is Developer ID signed, not notarized yet), or build it from source with <code>./build.sh</code>. See the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses private DisplayServices and SkyLight APIs, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
 </div>
 
 <footer>
