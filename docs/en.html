@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yamiy — a menu-bar app that keeps your MacBook's screen dark without putting the display to sleep</title>
+<meta name="description" content="Yamiy is a menu-bar app that keeps your MacBook's screen dark. The display is never put to sleep, so screen capture and remote control keep working. Made for people who run AI agents and automations on a Mac around the clock.">
+<meta name="theme-color" content="#0a0f24">
+<link rel="alternate" hreflang="ja" href="https://snowkiss13.github.io/yamiy/">
+<link rel="alternate" hreflang="en" href="https://snowkiss13.github.io/yamiy/en.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Yamiy">
+<meta property="og:title" content="Yamiy — a menu-bar app that keeps your MacBook's screen dark without putting the display to sleep">
+<meta property="og:description" content="For everyone who wants to hand their MacBook over to AI. The screen stays dark while screen capture and remote control keep working.">
+<meta property="og:url" content="https://snowkiss13.github.io/yamiy/en.html">
+<meta property="og:image" content="https://snowkiss13.github.io/yamiy/images/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<!--
+  English edition of index.html. The structure, the class names and the data-t ids are the same
+  as the Japanese page, so a sentence can be matched across the two files by its data-t id.
+  The CSS below is a copy of the CSS in index.html; only the two font variables differ.
+-->
+<style>
+  :root {
+    --night: #080c1f;
+    --navy: #0f1533;
+    --panel: #151c42;
+    --panel-2: #1b2452;
+    --line: rgba(244, 231, 195, .14);
+    --line-strong: rgba(244, 231, 195, .32);
+    --cream: #f4e7c3;
+    --cream-dim: #d9cba4;
+    --text: #e8e5da;
+    --sub: #a6abc6;
+    --ok: #9fd8b4;
+    --warn: #e6b08a;
+    --mincho: "Iowan Old Style", "Palatino", "Palatino Linotype", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --w: 1080px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: var(--cream); text-underline-offset: 3px; }
+  a:hover { color: #fff; }
+  code { font-family: var(--mono); font-size: .92em; background: rgba(244,231,195,.08); padding: .1em .4em; border-radius: 5px; }
+  .wrap { max-width: var(--w); margin: 0 auto; padding: 0 24px; }
+  .narrow { max-width: 720px; }
+
+  .sky {
+    position: relative;
+    background:
+      radial-gradient(1200px 600px at 78% -10%, rgba(58, 69, 128, .55), transparent 60%),
+      linear-gradient(180deg, #0c1230 0%, var(--night) 100%);
+  }
+  .stars, .stars::before, .stars::after {
+    position: absolute; inset: 0; content: ""; pointer-events: none;
+    background-repeat: repeat;
+  }
+  .stars {
+    background-image:
+      radial-gradient(1.2px 1.2px at 12% 18%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1px 1px at 31% 62%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1.4px 1.4px at 54% 28%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1px 1px at 73% 74%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 90% 40%, var(--cream) 50%, transparent 51%);
+    background-size: 620px 420px;
+    opacity: .5;
+  }
+  .stars::before {
+    background-image:
+      radial-gradient(1px 1px at 22% 44%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 63% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 84% 86%, #fff 50%, transparent 51%);
+    background-size: 380px 300px;
+    opacity: .45;
+    animation: twinkle 6s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: .15; } to { opacity: .55; } }
+
+  .nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 600; letter-spacing: .04em; font-size: 18px; }
+  .icon { position: relative; width: 36px; height: 36px; border-radius: 9px; overflow: hidden; flex: none; box-shadow: 0 0 0 1px var(--line); }
+  .icon svg { display: block; width: 100%; height: 100%; }
+  .icon::after { content: ""; position: absolute; inset: 0; background: url(images/icon-1024.png) center / cover no-repeat; }
+  .nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; font-size: 14px; }
+  .nav ul a { color: var(--sub); text-decoration: none; }
+  .nav ul a:hover { color: var(--cream); }
+
+  .hero { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding: 56px 0 96px; }
+  .eyebrow { display: inline-flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--cream-dim); letter-spacing: .06em; margin: 0 0 22px; }
+  .eyebrow span { border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; }
+  h1 { font-family: var(--mincho); font-weight: 600; font-size: clamp(34px, 4.8vw, 56px); line-height: 1.2; letter-spacing: .005em; margin: 0 0 26px; color: var(--cream); }
+  h1 span { display: inline-block; }
+  .lead { font-size: clamp(16px, 1.6vw, 18px); color: var(--text); margin: 0 0 32px; max-width: 34em; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; transition: transform .15s ease, background .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-main { background: var(--cream); color: #0d1230; }
+  .btn-main:hover { background: #fff; color: #0d1230; }
+  .btn-sub { border: 1px solid var(--line-strong); color: var(--cream); }
+  .fine { font-size: 13px; color: var(--sub); margin: 18px 0 0; }
+
+  .slot { position: relative; overflow: hidden; border-radius: 20px; background: linear-gradient(160deg, #1a2350, #0b1026); border: 1px solid var(--line); }
+  .slot > svg { display: block; width: 100%; height: 100%; }
+  .slot::after { content: ""; position: absolute; inset: 0; background-position: center; background-size: cover; background-repeat: no-repeat; }
+  .slot-hero { aspect-ratio: 4 / 3; box-shadow: 0 40px 80px -30px rgba(0,0,0,.7); }
+  .slot-hero::after { background-image: url(images/hero.jpg); }
+  .slot-lit { aspect-ratio: 3 / 2; }
+  .slot-lit::after { background-image: url(images/scene-lit.jpg); }
+  .slot-lid { aspect-ratio: 3 / 2; }
+  .slot-lid::after { background-image: url(images/scene-lid.jpg); }
+
+  section { padding: 96px 0; position: relative; }
+  section.alt { background: var(--navy); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .kicker { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--cream-dim); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .kicker::before { content: ""; width: 22px; height: 1px; background: var(--cream-dim); }
+  h2 { font-family: var(--mincho); font-weight: 600; font-size: clamp(24px, 3.2vw, 36px); line-height: 1.3; margin: 0 0 24px; color: var(--cream); max-width: 24em; }
+  h3 { font-size: 17px; line-height: 1.45; margin: 0 0 8px; color: var(--cream); font-weight: 600; }
+  p { margin: 0 0 16px; }
+  .sub { color: var(--sub); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+
+  .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .opt { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .opt.pick { background: linear-gradient(170deg, var(--panel-2), var(--panel)); border-color: var(--line-strong); box-shadow: 0 0 0 1px rgba(244,231,195,.08), 0 24px 50px -30px rgba(244,231,195,.35); }
+  .opt .mini { height: 78px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--line); display: grid; place-items: center; }
+  .mini.on { background: linear-gradient(135deg, #f6efd9, #cfd6f2); }
+  .mini.on i { width: 60%; height: 8px; border-radius: 4px; background: rgba(13,18,48,.45); box-shadow: 0 16px 0 rgba(13,18,48,.3), 0 -16px 0 rgba(13,18,48,.3); }
+  .mini.sleep { background: #04050b; color: var(--sub); font-family: var(--mincho); letter-spacing: .3em; }
+  .mini.dark { background: #04050b; }
+  .mini.dark svg { width: 30px; height: 30px; }
+  .opt dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 2px; font-size: 14px; }
+  .opt dt { color: var(--sub); margin-top: 8px; }
+  .opt dd { margin: 0; }
+  .good { color: var(--ok); }
+  .bad { color: var(--warn); }
+
+  .macs { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 48px 0 16px; }
+  .mac { margin: 0; }
+  .mac .lid { position: relative; aspect-ratio: 16 / 10; border-radius: 14px 14px 4px 4px; padding: 10px; background: #2a2f45; border: 1px solid #454b66; box-shadow: 0 30px 60px -30px rgba(0,0,0,.8); }
+  .mac .screen { position: absolute; inset: 10px; border-radius: 6px; overflow: hidden; }
+  .mac .base { height: 12px; margin: 0 -5%; border-radius: 0 0 14px 14px; background: linear-gradient(180deg, #5a607c, #2e3350); }
+  .mac figcaption { text-align: center; margin-top: 18px; font-size: 15px; color: var(--cream); }
+  .mac figcaption small { display: block; color: var(--sub); font-size: 13px; }
+  .screen.black { background: radial-gradient(120% 90% at 80% 0%, #0d101c, #020308 60%); }
+  .screen.black::after { content: ""; position: absolute; right: 9%; top: 12%; width: 13%; aspect-ratio: 1; border-radius: 50%; box-shadow: inset -7px 4px 0 0 rgba(244,231,195,.07); }
+  .screen.live { background: linear-gradient(140deg, #26306a, #151c42); font-family: var(--mono); }
+  .bar { height: 9%; background: rgba(8,12,31,.55); display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 0 3%; }
+  .bar i { width: 8px; height: 8px; border-radius: 2px; background: rgba(244,231,195,.5); }
+  .bar i.moon { border-radius: 50%; background: none; box-shadow: inset -3px 1px 0 0 var(--cream); }
+  .term { position: absolute; left: 6%; right: 22%; top: 18%; bottom: 10%; background: rgba(6,9,22,.9); border: 1px solid rgba(244,231,195,.18); border-radius: 8px; padding: 6% 5%; display: flex; flex-direction: column; gap: 9%; }
+  .term b { display: block; height: 7%; min-height: 4px; border-radius: 3px; background: rgba(232,229,218,.35); font-weight: normal; transform-origin: left; animation: grow 7s steps(14) infinite; }
+  .term b:nth-child(1) { width: 62%; background: var(--ok); opacity: .7; animation-delay: 0s; }
+  .term b:nth-child(2) { width: 84%; animation-delay: .9s; }
+  .term b:nth-child(3) { width: 48%; animation-delay: 1.8s; }
+  .term b:nth-child(4) { width: 74%; background: var(--ok); opacity: .7; animation-delay: 2.7s; }
+  .term b:nth-child(5) { width: 30%; animation-delay: 3.6s; }
+  .term em { display: block; width: 8px; height: 12%; min-height: 8px; background: var(--cream); animation: blink 1s steps(2) infinite; }
+  .side { position: absolute; right: 5%; top: 18%; width: 13%; bottom: 10%; display: flex; flex-direction: column; gap: 8%; }
+  .side i { flex: 1; border-radius: 6px; background: rgba(244,231,195,.16); }
+  @keyframes grow { 0% { transform: scaleX(0); } 14%, 100% { transform: scaleX(1); } }
+  @keyframes blink { 50% { opacity: 0; } }
+  .note { font-size: 13px; color: var(--sub); text-align: center; margin: 0; }
+
+  .states { display: grid; grid-template-columns: 1fr 1.25fr 1fr; grid-template-rows: auto auto; gap: 16px 20px; margin: 44px 0 28px; align-items: stretch; }
+  .state { grid-row: 1 / span 2; border-radius: 18px; padding: 26px 24px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .state.stealth { grid-column: 1; background: #05070f; }
+  .state.owner { grid-column: 3; background: linear-gradient(160deg, #f3ead0, #d6dcf4); color: #151a3a; border-color: transparent; }
+  .state .name { font-family: var(--mincho); font-size: 24px; color: var(--cream); margin: 0; }
+  .state.owner .name { color: #151a3a; }
+  .state p { font-size: 14px; margin: 0; }
+  .state svg { width: 40px; height: 40px; }
+  .way { grid-column: 2; border: 1px dashed var(--line-strong); border-radius: 14px; padding: 14px 18px; font-size: 14px; position: relative; }
+  .way .dir { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--cream-dim); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .way.go .dir::after { content: "→"; font-size: 18px; margin-left: auto; color: var(--cream); }
+  .way.back .dir::before { content: "←"; font-size: 18px; color: var(--cream); }
+  .way ul { margin: 0; padding: 0; list-style: none; }
+  .way li { padding: 3px 0; }
+  .way li + li { border-top: 1px solid var(--line); }
+
+  .grid6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .card .num { font-family: var(--mincho); color: var(--cream-dim); font-size: 14px; letter-spacing: .1em; margin: 0 0 10px; }
+  .card p { font-size: 14.5px; color: var(--sub); margin: 0; }
+
+  .shot { margin: 0; }
+  .shot object { display: block; max-width: 100%; height: auto; border-radius: 14px; margin: 0 auto; }
+  .list { margin: 0 0 16px; padding: 0; list-style: none; }
+  .list li { padding: 12px 0 12px 30px; border-top: 1px solid var(--line); position: relative; }
+  .list li:last-child { border-bottom: 1px solid var(--line); }
+  .list li::before { content: ""; position: absolute; left: 4px; top: 20px; width: 11px; height: 11px; border-radius: 50%; box-shadow: inset -4px 2px 0 0 var(--cream); }
+
+  .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 40px 0 28px; padding: 0; list-style: none; }
+  .steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .steps li::before { content: counter(s); display: block; font-family: var(--mincho); font-size: 40px; line-height: 1; color: var(--cream); margin-bottom: 14px; }
+  .steps p { margin: 0; font-size: 15px; }
+  .box { border-left: 2px solid var(--cream-dim); padding: 4px 0 4px 20px; margin: 0 0 20px; }
+  .box h3 { font-size: 15px; }
+  .box p { font-size: 14.5px; color: var(--sub); margin: 0; }
+  pre { margin: 12px 0 0; background: #05070f; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.7; color: var(--text); }
+
+  .mech { margin: 32px 0 0; border-top: 1px solid var(--line); }
+  .mech div { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .mech dt { color: var(--cream); font-weight: 600; font-size: 15px; }
+  .mech dd { margin: 0; color: var(--sub); font-size: 14.5px; }
+
+  details { border-top: 1px solid var(--line); padding: 4px 0; }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; padding: 16px 28px 16px 0; list-style: none; position: relative; color: var(--cream); font-weight: 600; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; position: absolute; right: 4px; top: 12px; font-size: 22px; font-weight: 400; color: var(--cream-dim); }
+  details[open] summary::after { content: "−"; }
+  details p { color: var(--sub); font-size: 15px; padding-bottom: 8px; }
+
+  .cta { position: relative; text-align: center; padding: 120px 0; overflow: hidden; background: radial-gradient(900px 420px at 50% 0%, rgba(58,69,128,.5), transparent 70%), var(--night); }
+  .cta::before { content: ""; position: absolute; inset: 0; background: url(images/cta-night.jpg) center / cover no-repeat; opacity: .55; }
+  .cta::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,12,31,.75), rgba(8,12,31,.45) 50%, rgba(8,12,31,.9)); }
+  .cta .wrap { position: relative; z-index: 1; }
+  .cta .tag { font-family: var(--mincho); font-size: clamp(26px, 4vw, 44px); line-height: 1.3; color: var(--cream); margin: 0 0 14px; }
+  .cta .btns { justify-content: center; margin-top: 30px; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--sub); font-size: 13px; text-align: center; }
+
+  @media (max-width: 860px) {
+    .hero, .two { grid-template-columns: 1fr; gap: 36px; }
+    .hero { padding: 28px 0 64px; }
+    .compare, .grid6, .steps { grid-template-columns: 1fr; }
+    .macs { grid-template-columns: 1fr; gap: 36px; }
+    .states { grid-template-columns: 1fr; }
+    .state, .way { grid-column: 1 !important; grid-row: auto !important; }
+    .state.stealth { order: 1; } .way.go { order: 2; } .state.owner { order: 3; } .way.back { order: 4; }
+    .way.go .dir::after { content: "↓"; }
+    .way.back .dir::before { content: "↑"; }
+    .mech div { grid-template-columns: 1fr; gap: 4px; }
+    section { padding: 68px 0; }
+    .nav ul li.hide { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sky">
+  <div class="stars" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav class="nav" aria-label="On this page">
+      <a class="brand" href="#top" id="top">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#141b45"/><mask id="m0"><rect width="64" height="64" fill="#fff"/><circle cx="25" cy="27" r="17" fill="#000"/></mask><circle cx="33" cy="33" r="19" fill="#f4e7c3" mask="url(#m0)"/><path d="M19 15l1.6 4.4L25 21l-4.4 1.6L19 27l-1.6-4.4L13 21l4.4-1.6z" fill="#f4e7c3"/></svg>
+        </span>
+        Yamiy
+      </a>
+      <ul>
+        <li class="hide"><a href="#how" data-t="nav-1">What goes dark</a></li>
+        <li class="hide"><a href="#mode" data-t="nav-2">Getting the screen back</a></li>
+        <li><a href="#install" data-t="nav-3">Install</a></li>
+        <li><a href="./" lang="ja" hreflang="ja">日本語</a></li>
+        <li><a href="https://github.com/snowkiss13/yamiy">GitHub</a></li>
+      </ul>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow"><span data-t="hero-chip-1">Menu-bar app</span><span>v0.3.0</span><span data-t="hero-chip-2">MIT License</span></p>
+        <h1 data-t="hero-tagline"><span>For everyone who wants</span> <span>to hand their MacBook</span> <span>over to AI.</span></h1>
+        <p class="lead">
+          <span data-t="hero-lead-1">Yamiy is a menu-bar app that keeps your MacBook's screen dark.</span>
+          <span data-t="hero-lead-2">The display is never put to sleep, so screen capture and remote control keep working.</span>
+        </p>
+        <div class="btns">
+          <a class="btn btn-main" href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip" data-t="hero-btn-1">Download Yamiy-0.3.0.zip</a>
+          <a class="btn btn-sub" href="https://github.com/snowkiss13/yamiy" data-t="hero-btn-2">View the source on GitHub</a>
+        </div>
+        <p class="fine" data-t="hero-fine">Runs on Apple Silicon Macs with macOS 14 or later.</p>
+      </div>
+
+      <div class="slot slot-hero" role="img" aria-label="Illustration of a laptop with a completely dark screen on a desk at night, with a crescent moon outside the window">
+        <svg viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2658"/><stop offset="1" stop-color="#0a0f26"/></linearGradient>
+            <mask id="m1"><rect width="640" height="480" fill="#fff"/><circle cx="436" cy="112" r="62" fill="#000"/></mask>
+            <radialGradient id="g2" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f4e7c3" stop-opacity=".22"/><stop offset="1" stop-color="#f4e7c3" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="640" height="480" fill="url(#g1)"/>
+          <circle cx="462" cy="132" r="170" fill="url(#g2)"/>
+          <circle cx="462" cy="132" r="70" fill="#f4e7c3" mask="url(#m1)"/>
+          <g fill="#f4e7c3">
+            <path d="M360 70l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+            <circle cx="120" cy="80" r="1.6"/><circle cx="210" cy="140" r="1.2"/><circle cx="560" cy="60" r="1.4"/><circle cx="80" cy="190" r="1.2"/><circle cx="300" cy="50" r="1.3"/><circle cx="585" cy="210" r="1.2"/>
+          </g>
+          <rect x="0" y="392" width="640" height="88" fill="#070a1a"/>
+          <rect x="0" y="390" width="640" height="2" fill="#f4e7c3" opacity=".18"/>
+          <rect x="182" y="196" width="276" height="180" rx="12" fill="#2b3150" stroke="#f4e7c3" stroke-opacity=".35"/>
+          <rect x="194" y="208" width="252" height="156" rx="5" fill="#020308"/>
+          <path d="M150 376h340l22 16H128z" fill="#3b4162"/>
+          <rect x="282" y="380" width="76" height="5" rx="2.5" fill="#20253f"/>
+          <g stroke="#f4e7c3" stroke-opacity=".28" stroke-width="1.5" fill="none" stroke-linecap="round">
+            <path d="M214 330h60M214 344h96M214 316h40"/>
+          </g>
+        </svg>
+      </div>
+    </header>
+  </div>
+</div>
+
+<main>
+
+<section id="why">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <p class="kicker" data-t="why-kicker">Why it exists</p>
+        <h2 data-t="why-h2">You don't want the screen seen, but putting the display to sleep gets in the way of remote control and automation</h2>
+        <p>
+          <span data-t="why-1">If you run AI agents or automations on your Mac around the clock, the display stays on.</span>
+          <span data-t="why-2">You do not want other people to see what is on it.</span>
+          <span data-t="why-3">Putting the display to sleep, on the other hand, gets in the way of remote control and automation in some situations.</span>
+        </p>
+        <p>
+          <span data-t="why-4">Yamiy is the app to use between those two.</span>
+        </p>
+      </div>
+      <div class="slot slot-lit" role="img" aria-label="Illustration of a dark room where only the screen of a laptop left on is glowing">
+        <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><radialGradient id="g3" cx="50%" cy="52%" r="55%"><stop offset="0" stop-color="#f4e7c3" stop-opacity=".5"/><stop offset="1" stop-color="#f4e7c3" stop-opacity="0"/></radialGradient></defs>
+          <rect width="600" height="400" fill="#080c1f"/>
+          <ellipse cx="300" cy="210" rx="300" ry="200" fill="url(#g3)"/>
+          <rect x="0" y="318" width="600" height="82" fill="#05070f"/>
+          <rect x="196" y="146" width="208" height="140" rx="10" fill="#2b3150"/>
+          <rect x="206" y="156" width="188" height="120" rx="4" fill="#f6efd9"/>
+          <g fill="#151a3a" opacity=".5"><rect x="220" y="172" width="90" height="8" rx="4"/><rect x="220" y="190" width="150" height="8" rx="4"/><rect x="220" y="208" width="120" height="8" rx="4"/><rect x="220" y="226" width="70" height="8" rx="4"/><rect x="220" y="244" width="136" height="8" rx="4"/></g>
+          <path d="M170 286h260l18 14H152z" fill="#3b4162"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="opt">
+        <div class="mini on" aria-hidden="true"><i></i></div>
+        <h3 data-t="cmp-1-h">Leave the screen on</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">What is on the screen</dt><dd class="bad" data-t="cmp-1-a">Visible to anyone nearby</dd>
+          <dt data-t="cmp-dt-2">Remote control and automation</dt><dd class="good" data-t="cmp-1-b">Keep working</dd>
+        </dl>
+      </div>
+      <div class="opt">
+        <div class="mini sleep" aria-hidden="true">zzz</div>
+        <h3 data-t="cmp-2-h">Put the display to sleep</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">What is on the screen</dt><dd class="good" data-t="cmp-2-a">Not visible</dd>
+          <dt data-t="cmp-dt-2">Remote control and automation</dt><dd class="bad" data-t="cmp-2-b">Get in trouble in some situations</dd>
+        </dl>
+      </div>
+      <div class="opt pick">
+        <div class="mini dark" aria-hidden="true"><svg viewBox="0 0 64 64"><mask id="m2"><rect width="64" height="64" fill="#fff"/><circle cx="24" cy="26" r="20" fill="#000"/></mask><circle cx="33" cy="33" r="23" fill="#f4e7c3" mask="url(#m2)"/></svg></div>
+        <h3 data-t="cmp-3-h">Keep it dark with Yamiy</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">What is on the screen</dt><dd class="good" data-t="cmp-3-a">Dark, not visible</dd>
+          <dt data-t="cmp-dt-2">Remote control and automation</dt><dd class="good" data-t="cmp-3-b">Screen capture and remote control keep working</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="how-kicker">What goes dark</p>
+    <h2 data-t="how-h2">Yamiy lowers the display brightness. Screen capture and remote control still see the usual screen</h2>
+    <p class="narrow">
+      <span data-t="how-1">Yamiy holds the display brightness at zero.</span>
+      <span data-t="how-2">The screen itself stays awake.</span>
+      <span data-t="how-3">Screen capture and remote control keep working, whatever the brightness is.</span>
+    </p>
+
+    <div class="macs">
+      <figure class="mac">
+        <div class="lid"><div class="screen black"></div></div>
+        <div class="base"></div>
+        <figcaption><span data-t="fig-1">The screen as seen by someone in front of the Mac</span><small data-t="fig-1s">Brightness is zero, and it is dark</small></figcaption>
+      </figure>
+      <figure class="mac">
+        <div class="lid"><div class="screen live">
+          <div class="bar"><i class="moon"></i><i></i><i></i></div>
+          <div class="term"><b></b><b></b><b></b><b></b><b></b><em></em></div>
+          <div class="side"><i></i><i></i><i></i></div>
+        </div></div>
+        <div class="base"></div>
+        <figcaption><span data-t="fig-2">The screen as seen by screen capture and remote control</span><small data-t="fig-2s">The same Mac, at the same moment</small></figcaption>
+      </figure>
+    </div>
+    <p class="note" data-t="fig-note">The two laptops above are a diagram for explanation, not a capture of a real screen.</p>
+  </div>
+</section>
+
+<section id="mode">
+  <div class="wrap">
+    <p class="kicker" data-t="mode-kicker">Getting the screen back</p>
+    <h2 data-t="mode-h2">The screen lights up again only when you unlock with Touch ID</h2>
+    <p class="narrow">
+      <span data-t="mode-1">Yamiy starts in stealth.</span>
+      <span data-t="mode-2">In stealth the screen is dark and the brightness keys do nothing.</span>
+      <span data-t="mode-3">The state in which you can use the screen at normal brightness is called owner mode.</span>
+    </p>
+
+    <div class="states">
+      <div class="state stealth">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><mask id="m3"><rect width="64" height="64" fill="#fff"/><circle cx="24" cy="26" r="20" fill="#000"/></mask><circle cx="33" cy="33" r="23" fill="#f4e7c3" mask="url(#m3)"/></svg>
+        <p class="name" data-t="st-1-name">Stealth</p>
+        <p data-t="st-1-a">The screen is dark.</p>
+        <p data-t="st-1-b">The brightness keys do nothing.</p>
+        <p data-t="st-1-c">This is the state right after launch.</p>
+      </div>
+      <div class="way go">
+        <p class="dir" data-t="way-go-dir">Enter owner mode</p>
+        <ul>
+          <li data-t="way-go-1">Lock the screen with the Touch ID button, then unlock with your fingerprint</li>
+        </ul>
+      </div>
+      <div class="way back">
+        <p class="dir" data-t="way-back-dir">Return to stealth</p>
+        <ul>
+          <li data-t="way-back-1">Lock the screen again</li>
+          <li data-t="way-back-2">Close the lid</li>
+          <li data-t="way-back-3">Touch nothing for five minutes</li>
+        </ul>
+      </div>
+      <div class="state owner">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="13" fill="#151a3a"/><g stroke="#151a3a" stroke-width="4" stroke-linecap="round"><path d="M32 6v7M32 51v7M6 32h7M51 32h7M13.6 13.6l5 5M45.4 45.4l5 5M13.6 50.4l5-5M45.4 18.6l5-5"/></g></svg>
+        <p class="name" data-t="st-2-name">Owner mode</p>
+        <p data-t="st-2-a">The screen lights up again.</p>
+        <p data-t="st-2-b">You choose the brightness in Settings.</p>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3 data-t="lid-h3">Closing the lid makes the screen dark without waiting five minutes</h3>
+        <p>
+          <span data-t="lid-1">Yamiy enters stealth at the moment the lid closes.</span>
+          <span data-t="lid-2">When you open the lid, the screen stays dark until you unlock.</span>
+        </p>
+        <p class="sub">
+          <span data-t="lid-3">The idle time before Yamiy returns to stealth starts at five minutes.</span>
+          <span data-t="lid-4">You can change it in Settings.</span>
+        </p>
+      </div>
+      <div class="slot slot-lid" role="img" aria-label="Illustration of a laptop with its lid half closed under a crescent moon">
+        <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><mask id="m4"><rect width="600" height="400" fill="#fff"/><circle cx="424" cy="96" r="44" fill="#000"/></mask></defs>
+          <rect width="600" height="400" fill="#0b1026"/>
+          <circle cx="442" cy="110" r="50" fill="#f4e7c3" mask="url(#m4)"/>
+          <path d="M360 70l2.4 6.6L369 79l-6.6 2.4L360 88l-2.4-6.6L351 79l6.6-2.4z" fill="#f4e7c3"/>
+          <rect x="0" y="300" width="600" height="100" fill="#05070f"/>
+          <path d="M170 284h250l14 16H156z" fill="#3b4162"/>
+          <path d="M176 284L330 178l10 10-150 100z" fill="#2b3150" stroke="#f4e7c3" stroke-opacity=".3"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="feat-kicker">What Yamiy does</p>
+    <h2 data-t="feat-h2">Six things Yamiy does to keep the screen dark</h2>
+    <div class="grid6">
+      <div class="card">
+        <p class="num">01</p>
+        <h3 data-t="feat-1-h">Keeps setting the brightness back to zero</h3>
+        <p>
+          <span data-t="feat-1-a">Setting the brightness to zero once does not stick, because automatic adjustment and the like push it back.</span>
+          <span data-t="feat-1-b">Yamiy sets it back to the minimum every 0.15 seconds.</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">02</p>
+        <h3 data-t="feat-2-h">Makes the brightness keys do nothing</h3>
+        <p>
+          <span data-t="feat-2-a">The brightness keys on the built-in keyboard are caught by an event tap and dropped.</span>
+          <span data-t="feat-2-b">For external keyboards, a <code>hidutil</code> remap is used as well.</span>
+          <span data-t="feat-2-c">The event tap needs the Accessibility permission.</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">03</p>
+        <h3 data-t="feat-3-h">Enters stealth as soon as the lid closes</h3>
+        <p>
+          <span data-t="feat-3-a">It does not wait for five idle minutes.</span>
+          <span data-t="feat-3-b">When you open the lid, the screen stays dark until you unlock.</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">04</p>
+        <h3 data-t="feat-4-h">Can disable external displays too</h3>
+        <p>
+          <span data-t="feat-4-a">External displays can be disabled in Settings.</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">05</p>
+        <h3 data-t="feat-5-h">Leaves one way into owner mode</h3>
+        <p>
+          <span data-t="feat-5-a">You enter owner mode only by unlocking with Touch ID.</span>
+          <span data-t="feat-5-b">After five minutes without input, Yamiy returns to stealth by itself.</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">06</p>
+        <h3 data-t="feat-6-h">Never puts the display to sleep</h3>
+        <p>
+          <span data-t="feat-6-a">Yamiy only lowers the brightness and does not put the display to sleep.</span>
+          <span data-t="feat-6-b">Screen capture and remote control continue.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="menu">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <p class="kicker" data-t="menu-kicker">Day to day</p>
+        <h2 data-t="menu-h2">Click the crescent in the menu bar to see the current state</h2>
+        <p>
+          <span data-t="menu-1">Clicking the crescent-moon icon in the menu bar opens the menu.</span>
+          <span data-t="menu-2">From Open Settings in the menu, you can change these eight things.</span>
+        </p>
+        <ul class="list">
+          <li data-t="menu-li-1">The brightness in owner mode</li>
+          <li data-t="menu-li-2">The idle time before the screen goes dark again</li>
+          <li data-t="menu-li-3">Whether Yamiy starts at login</li>
+          <li data-t="menu-li-4">Whether external displays are disabled as well</li>
+          <li data-t="menu-li-5">Whether the screen returns to dark automatically when idle</li>
+          <li data-t="menu-li-6">Whether closing the lid enters stealth</li>
+          <li data-t="menu-li-7">Whether the brightness keys are blocked</li>
+          <li data-t="menu-li-8">Whether the last brightness is carried over</li>
+        </ul>
+        <p class="sub">
+          <span data-t="menu-3">To quit, choose Quit Yamiy in the menu.</span>
+          <span data-t="menu-4">When Yamiy quits, the keys and the brightness are restored.</span>
+          <span data-t="menu-5">The menu and settings follow your system language, in Japanese or English.</span>
+        </p>
+      </div>
+      <figure class="shot">
+        <object data="images/menu.png" type="image/png" aria-label="Screenshot of the Yamiy menu">
+          <div class="slot" style="aspect-ratio: 4 / 3;" aria-hidden="true">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><rect width="400" height="300" fill="#0b1026"/><rect width="400" height="34" fill="#05070f"/><mask id="m5"><rect width="400" height="300" fill="#fff"/><circle cx="337" cy="15" r="8" fill="#000"/></mask><circle cx="341" cy="17" r="9" fill="#f4e7c3" mask="url(#m5)"/><rect x="190" y="44" width="186" height="196" rx="12" fill="#151c42" stroke="#f4e7c3" stroke-opacity=".25"/><g fill="#f4e7c3" opacity=".35"><rect x="208" y="66" width="110" height="9" rx="4.5"/><rect x="208" y="104" width="140" height="9" rx="4.5"/><rect x="208" y="134" width="96" height="9" rx="4.5"/><rect x="208" y="186" width="120" height="9" rx="4.5"/></g><g stroke="#f4e7c3" stroke-opacity=".18"><path d="M202 88h162M202 166h162"/></g></svg>
+          </div>
+        </object>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="inst-kicker">Install</p>
+    <h2 data-t="inst-h2">Three steps to install: download, move to Applications, open</h2>
+    <ol class="steps">
+      <li><p><span data-t="inst-s1">Download <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip">Yamiy-0.3.0.zip</a> and unzip it.</span></p></li>
+      <li><p><span data-t="inst-s2">Move <code>Yamiy.app</code> to your Applications folder.</span></p></li>
+      <li><p><span data-t="inst-s3">Double-click <code>Yamiy.app</code> to open it.</span></p></li>
+    </ol>
+
+    <div class="two" style="align-items: start;">
+      <div>
+        <div class="box">
+          <h3 data-t="inst-b1-h">Signing and notarization</h3>
+          <p>
+            <span data-t="inst-b1-a">Yamiy is signed with a Developer ID and notarized by Apple.</span>
+            <span data-t="inst-b1-b">A plain double-click opens it.</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b2-h">The permission that fully blocks the brightness keys</h3>
+          <p>
+            <span data-t="inst-b2-a">Allow Yamiy under Accessibility, in Privacy &amp; Security in System Settings.</span>
+            <span data-t="inst-b2-b">Without the permission, holding the brightness alone still keeps the screen dark.</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b3-h">Starting automatically at login</h3>
+          <p>
+            <span data-t="inst-b3-a">You can turn on launch at login in the app's settings.</span>
+          </p>
+        </div>
+      </div>
+      <div>
+        <div class="box">
+          <h3 data-t="inst-b4-h">Requirements</h3>
+          <p>
+            <span data-t="inst-b4-a">An Apple Silicon Mac with macOS 14 or later.</span>
+            <span data-t="inst-b4-b">Yamiy is developed and checked on macOS 27.</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b5-h">Building from source</h3>
+          <p>
+            <span data-t="inst-b5-a">You need the Xcode command line tools.</span>
+            <span data-t="inst-b5-b">Get the repository and run these two lines.</span>
+          </p>
+          <pre>./build.sh
+open build/Yamiy.app</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <p class="kicker" data-t="in-kicker">How it works</p>
+    <h2 data-t="in-h2">Yamiy uses private macOS APIs, so it is distributed on GitHub and not on the Mac App Store</h2>
+    <p class="narrow">
+      <span data-t="in-1">Yamiy uses two private APIs, DisplayServices and SkyLight.</span>
+      <span data-t="in-2">An app that uses private APIs cannot be distributed on the Mac App Store.</span>
+      <span data-t="in-3">The source code is published under the MIT License.</span>
+    </p>
+    <dl class="mech">
+      <div><dt data-t="in-dt-1">Brightness control</dt><dd data-t="in-dd-1">The brightness is set through the private DisplayServices API and set back to the minimum every 0.15 seconds.</dd></div>
+      <div><dt data-t="in-dt-2">Blocking the brightness keys</dt><dd data-t="in-dd-2">Keys on the built-in keyboard are caught by an event tap, and a <code>hidutil</code> remap is used as well for external keyboards.</dd></div>
+      <div><dt data-t="in-dt-3">External displays</dt><dd data-t="in-dd-3">The private SkyLight API is used. External displays can be disabled in Settings.</dd></div>
+      <div><dt data-t="in-dt-4">Lid open and close</dt><dd data-t="in-dd-4">Yamiy watches the clamshell state in IOKit.</dd></div>
+      <div><dt data-t="in-dt-5">Detecting lock and unlock</dt><dd data-t="in-dd-5">Yamiy uses the system's distributed notifications.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="faq" class="alt">
+  <div class="wrap narrow">
+    <p class="kicker" data-t="faq-kicker">Before you install</p>
+    <h2 data-t="faq-h2">Four things to check before you install Yamiy</h2>
+    <details open>
+      <summary data-t="faq-q1">Does the display sleep while Yamiy is running?</summary>
+      <p><span data-t="faq-a1">Yamiy does not put the display to sleep.</span>
+        <span data-t="faq-a1b">Screen capture and remote control continue.</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q2">What happens if I do not grant the Accessibility permission?</summary>
+      <p><span data-t="faq-a2">Holding the brightness still works, so the screen stays dark.</span>
+        <span data-t="faq-a2b">Fully blocking the brightness keys needs the permission.</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q3">What happens to the screen and the keys when I quit Yamiy?</summary>
+      <p><span data-t="faq-a3">The keys and the brightness are restored.</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q4">Does it run on Intel Macs, or on macOS 13 and earlier?</summary>
+      <p><span data-t="faq-a4">The requirements are an Apple Silicon Mac and macOS 14 or later.</span></p>
+    </details>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap">
+    <p class="tag" data-t="cta-tagline">For everyone who wants to hand their MacBook over to AI.</p>
+    <p class="sub" data-t="cta-1">The screen stays dark, and screen capture and remote control continue.</p>
+    <div class="btns">
+      <a class="btn btn-main" href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip" data-t="cta-btn-1">Download Yamiy-0.3.0.zip</a>
+      <a class="btn btn-sub" href="https://github.com/snowkiss13/yamiy/releases/tag/v0.3.0" data-t="cta-btn-2">See the v0.3.0 release</a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">Yamiy v0.3.0 · MIT License · <a href="https://github.com/snowkiss13/yamiy">github.com/snowkiss13/yamiy</a> · <a href="./" lang="ja" hreflang="ja">日本語</a></div>
+</footer>
+
+</body>
+</html>

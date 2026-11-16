@@ -3,129 +3,729 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yamiy — Mac の画面を、真っ暗なまま止めずに保つ</title>
-<meta name="description" content="Yamiy は Mac の内蔵ディスプレイを物理的に真っ暗に保ちながら、画面スリープはさせないメニューバーアプリです。AI エージェントや自動処理を走らせている間の覗き見対策に。">
+<title>Yamiy — MacBookの画面を真っ暗に保ち、スリープはさせないメニューバーアプリ</title>
+<meta name="description" content="Yamiyは、MacBookの画面を真っ暗に保つメニューバーアプリです。ディスプレイはスリープさせないので、画面キャプチャとリモート操作は動き続けます。AIエージェントや自動処理をMacで常時走らせる人のために作りました。">
+<meta name="theme-color" content="#0a0f24">
+<link rel="alternate" hreflang="ja" href="https://snowkiss13.github.io/yamiy/">
+<link rel="alternate" hreflang="en" href="https://snowkiss13.github.io/yamiy/en.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Yamiy">
+<meta property="og:title" content="Yamiy — MacBookの画面を真っ暗に保ち、スリープはさせないメニューバーアプリ">
+<meta property="og:description" content="MacBook を AI に明け渡したい、すべての人へ。画面は真っ暗なまま、画面キャプチャとリモート操作は動き続けます。">
+<meta property="og:url" content="https://snowkiss13.github.io/yamiy/">
+<meta property="og:image" content="https://snowkiss13.github.io/yamiy/images/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<!--
+  日本語文の差し替え方
+  本文の日本語は、1文ごとに <span data-t="番号"> で包み、1文を1行に置いてある。
+  行末の </span と次の行頭の > が分かれているのは、文と文の間に空白を出さないためである。
+  差し替えるときは、その行の <span data-t="..."> と </span の間だけを書き換える。
+  見出しと短い札は data-t を付けた要素そのものが1単位である。
+  画像は images/ に置けば差し込まれる。無ければページ内の絵が出る。一覧は PROMPTS_gemini.md にある。
+-->
 <style>
   :root {
-    --bg: #141417;
-    --panel: #1e1e23;
-    --line: rgba(255,255,255,.09);
-    --text: #ececf1;
-    --sub: #a7a7b3;
-    --accent: #8ab4ff;
+    --night: #080c1f;
+    --navy: #0f1533;
+    --panel: #151c42;
+    --panel-2: #1b2452;
+    --line: rgba(244, 231, 195, .14);
+    --line-strong: rgba(244, 231, 195, .32);
+    --cream: #f4e7c3;
+    --cream-dim: #d9cba4;
+    --text: #e8e5da;
+    --sub: #a6abc6;
+    --ok: #9fd8b4;
+    --warn: #e6b08a;
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --w: 1080px;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--night);
     color: var(--text);
-    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-    line-height: 1.75;
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
-  header { padding: 72px 0 8px; text-align: center; }
-  h1 { font-size: 44px; margin: 0 0 6px; letter-spacing: .02em; }
-  .tagline { color: var(--sub); font-size: 17px; margin: 0; }
-  .hero-img { display: block; width: 100%; max-width: 680px; margin: 36px auto 8px; border-radius: 12px; }
-  h2 { font-size: 22px; margin: 52px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
-  p { margin: 10px 0; }
+  a { color: var(--cream); text-underline-offset: 3px; }
+  a:hover { color: #fff; }
+  code { font-family: var(--mono); font-size: .92em; background: rgba(244,231,195,.08); padding: .1em .4em; border-radius: 5px; }
+  .wrap { max-width: var(--w); margin: 0 auto; padding: 0 24px; }
+  .narrow { max-width: 720px; }
+
+  /* 夜空 */
+  .sky {
+    position: relative;
+    background:
+      radial-gradient(1200px 600px at 78% -10%, rgba(58, 69, 128, .55), transparent 60%),
+      linear-gradient(180deg, #0c1230 0%, var(--night) 100%);
+  }
+  .stars, .stars::before, .stars::after {
+    position: absolute; inset: 0; content: ""; pointer-events: none;
+    background-repeat: repeat;
+  }
+  .stars {
+    background-image:
+      radial-gradient(1.2px 1.2px at 12% 18%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1px 1px at 31% 62%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1.4px 1.4px at 54% 28%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1px 1px at 73% 74%, var(--cream) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 90% 40%, var(--cream) 50%, transparent 51%);
+    background-size: 620px 420px;
+    opacity: .5;
+  }
+  .stars::before {
+    background-image:
+      radial-gradient(1px 1px at 22% 44%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 63% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 84% 86%, #fff 50%, transparent 51%);
+    background-size: 380px 300px;
+    opacity: .45;
+    animation: twinkle 6s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: .15; } to { opacity: .55; } }
+
+  /* ナビ */
+  .nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 600; letter-spacing: .04em; font-size: 18px; }
+  .icon { position: relative; width: 36px; height: 36px; border-radius: 9px; overflow: hidden; flex: none; box-shadow: 0 0 0 1px var(--line); }
+  .icon svg { display: block; width: 100%; height: 100%; }
+  .icon::after { content: ""; position: absolute; inset: 0; background: url(images/icon-1024.png) center / cover no-repeat; }
+  .nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; font-size: 14px; }
+  .nav ul a { color: var(--sub); text-decoration: none; }
+  .nav ul a:hover { color: var(--cream); }
+
+  /* 最初の画面 */
+  .hero { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding: 56px 0 96px; }
+  .eyebrow { display: inline-flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--cream-dim); letter-spacing: .06em; margin: 0 0 22px; }
+  .eyebrow span { border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; }
+  h1 { font-family: var(--mincho); font-weight: 600; font-size: clamp(34px, 5.2vw, 60px); line-height: 1.35; letter-spacing: .02em; margin: 0 0 26px; color: var(--cream); }
+  h1 span { display: inline-block; }
+  .lead { font-size: clamp(16px, 1.6vw, 18px); color: var(--text); margin: 0 0 32px; max-width: 34em; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; transition: transform .15s ease, background .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-main { background: var(--cream); color: #0d1230; }
+  .btn-main:hover { background: #fff; color: #0d1230; }
+  .btn-sub { border: 1px solid var(--line-strong); color: var(--cream); }
+  .fine { font-size: 13px; color: var(--sub); margin: 18px 0 0; }
+
+  /* 画像の枠。画像が無ければ中のSVGが見える */
+  .slot { position: relative; overflow: hidden; border-radius: 20px; background: linear-gradient(160deg, #1a2350, #0b1026); border: 1px solid var(--line); }
+  .slot > svg { display: block; width: 100%; height: 100%; }
+  .slot::after { content: ""; position: absolute; inset: 0; background-position: center; background-size: cover; background-repeat: no-repeat; }
+  .slot-hero { aspect-ratio: 4 / 3; box-shadow: 0 40px 80px -30px rgba(0,0,0,.7); }
+  .slot-hero::after { background-image: url(images/hero.jpg); }
+  .slot-lit { aspect-ratio: 3 / 2; }
+  .slot-lit::after { background-image: url(images/scene-lit.jpg); }
+  .slot-lid { aspect-ratio: 3 / 2; }
+  .slot-lid::after { background-image: url(images/scene-lid.jpg); }
+
+  /* 節 */
+  section { padding: 96px 0; position: relative; }
+  section.alt { background: var(--navy); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .kicker { font-size: 13px; letter-spacing: .14em; color: var(--cream-dim); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .kicker::before { content: ""; width: 22px; height: 1px; background: var(--cream-dim); }
+  h2 { font-family: var(--mincho); font-weight: 600; font-size: clamp(24px, 3.2vw, 36px); line-height: 1.5; margin: 0 0 24px; color: var(--cream); max-width: 24em; }
+  h3 { font-size: 17px; line-height: 1.6; margin: 0 0 8px; color: var(--cream); font-weight: 600; }
+  p { margin: 0 0 16px; }
   .sub { color: var(--sub); }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-  .card h3 { margin: 0 0 6px; font-size: 15px; }
-  .card p { margin: 0; font-size: 13.5px; color: var(--sub); }
-  ol, ul { padding-left: 1.4em; }
-  li { margin: 6px 0; }
-  code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
-  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; }
-  .cta { text-align: center; margin: 56px 0 8px; }
-  .cta a {
-    display: inline-block; padding: 12px 28px; border-radius: 999px;
-    background: var(--text); color: #141417; text-decoration: none; font-weight: 600;
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+
+  /* 3つの比較 */
+  .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .opt { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .opt.pick { background: linear-gradient(170deg, var(--panel-2), var(--panel)); border-color: var(--line-strong); box-shadow: 0 0 0 1px rgba(244,231,195,.08), 0 24px 50px -30px rgba(244,231,195,.35); }
+  .opt .mini { height: 78px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--line); display: grid; place-items: center; }
+  .mini.on { background: linear-gradient(135deg, #f6efd9, #cfd6f2); }
+  .mini.on i { width: 60%; height: 8px; border-radius: 4px; background: rgba(13,18,48,.45); box-shadow: 0 16px 0 rgba(13,18,48,.3), 0 -16px 0 rgba(13,18,48,.3); }
+  .mini.sleep { background: #04050b; color: var(--sub); font-family: var(--mincho); letter-spacing: .3em; }
+  .mini.dark { background: #04050b; }
+  .mini.dark svg { width: 30px; height: 30px; }
+  .opt dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; }
+  .opt dt { color: var(--sub); white-space: nowrap; }
+  .opt dd { margin: 0; }
+  .good { color: var(--ok); }
+  .bad { color: var(--warn); }
+
+  /* 2台の図 */
+  .macs { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 48px 0 16px; }
+  .mac { margin: 0; }
+  .mac .lid { aspect-ratio: 16 / 10; border-radius: 14px 14px 4px 4px; padding: 10px; background: #2a2f45; border: 1px solid #454b66; box-shadow: 0 30px 60px -30px rgba(0,0,0,.8); }
+  .mac .lid { position: relative; }
+  .mac .screen { position: absolute; inset: 10px; border-radius: 6px; overflow: hidden; }
+  .mac .base { height: 12px; margin: 0 -5%; border-radius: 0 0 14px 14px; background: linear-gradient(180deg, #5a607c, #2e3350); }
+  .mac figcaption { text-align: center; margin-top: 18px; font-size: 15px; color: var(--cream); }
+  .mac figcaption small { display: block; color: var(--sub); font-size: 13px; }
+  .screen.black { background: radial-gradient(120% 90% at 80% 0%, #0d101c, #020308 60%); }
+  .screen.black::after { content: ""; position: absolute; right: 9%; top: 12%; width: 13%; aspect-ratio: 1; border-radius: 50%; box-shadow: inset -7px 4px 0 0 rgba(244,231,195,.07); }
+  .screen.live { background: linear-gradient(140deg, #26306a, #151c42); font-family: var(--mono); }
+  .bar { height: 9%; background: rgba(8,12,31,.55); display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 0 3%; }
+  .bar i { width: 8px; height: 8px; border-radius: 2px; background: rgba(244,231,195,.5); }
+  .bar i.moon { border-radius: 50%; background: none; box-shadow: inset -3px 1px 0 0 var(--cream); }
+  .term { position: absolute; left: 6%; right: 22%; top: 18%; bottom: 10%; background: rgba(6,9,22,.9); border: 1px solid rgba(244,231,195,.18); border-radius: 8px; padding: 6% 5%; display: flex; flex-direction: column; gap: 9%; }
+  .term b { display: block; height: 7%; min-height: 4px; border-radius: 3px; background: rgba(232,229,218,.35); font-weight: normal; transform-origin: left; animation: grow 7s steps(14) infinite; }
+  .term b:nth-child(1) { width: 62%; background: var(--ok); opacity: .7; animation-delay: 0s; }
+  .term b:nth-child(2) { width: 84%; animation-delay: .9s; }
+  .term b:nth-child(3) { width: 48%; animation-delay: 1.8s; }
+  .term b:nth-child(4) { width: 74%; background: var(--ok); opacity: .7; animation-delay: 2.7s; }
+  .term b:nth-child(5) { width: 30%; animation-delay: 3.6s; }
+  .term em { display: block; width: 8px; height: 12%; min-height: 8px; background: var(--cream); animation: blink 1s steps(2) infinite; }
+  .side { position: absolute; right: 5%; top: 18%; width: 13%; bottom: 10%; display: flex; flex-direction: column; gap: 8%; }
+  .side i { flex: 1; border-radius: 6px; background: rgba(244,231,195,.16); }
+  @keyframes grow { 0% { transform: scaleX(0); } 14%, 100% { transform: scaleX(1); } }
+  @keyframes blink { 50% { opacity: 0; } }
+  .note { font-size: 13px; color: var(--sub); text-align: center; margin: 0; }
+
+  /* 状態の図 */
+  .states { display: grid; grid-template-columns: 1fr 1.25fr 1fr; grid-template-rows: auto auto; gap: 16px 20px; margin: 44px 0 28px; align-items: stretch; }
+  .state { grid-row: 1 / span 2; border-radius: 18px; padding: 26px 24px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .state.stealth { grid-column: 1; background: #05070f; }
+  .state.owner { grid-column: 3; background: linear-gradient(160deg, #f3ead0, #d6dcf4); color: #151a3a; border-color: transparent; }
+  .state .name { font-family: var(--mincho); font-size: 24px; color: var(--cream); margin: 0; }
+  .state.owner .name { color: #151a3a; }
+  .state p { font-size: 14px; margin: 0; }
+  .state svg { width: 40px; height: 40px; }
+  .way { grid-column: 2; border: 1px dashed var(--line-strong); border-radius: 14px; padding: 14px 18px; font-size: 14px; position: relative; }
+  .way .dir { font-size: 12px; letter-spacing: .1em; color: var(--cream-dim); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .way.go .dir::after { content: "→"; font-size: 18px; margin-left: auto; color: var(--cream); }
+  .way.back .dir::before { content: "←"; font-size: 18px; color: var(--cream); }
+  .way ul { margin: 0; padding: 0; list-style: none; }
+  .way li { padding: 3px 0; }
+  .way li + li { border-top: 1px solid var(--line); }
+
+  /* 6つの働き */
+  .grid6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .card .num { font-family: var(--mincho); color: var(--cream-dim); font-size: 14px; letter-spacing: .1em; margin: 0 0 10px; }
+  .card p { font-size: 14.5px; color: var(--sub); margin: 0; }
+
+  /* メニュー */
+  .shot { margin: 0; }
+  .shot object { display: block; max-width: 100%; height: auto; border-radius: 14px; margin: 0 auto; }
+  .list { margin: 0 0 16px; padding: 0; list-style: none; }
+  .list li { padding: 12px 0 12px 30px; border-top: 1px solid var(--line); position: relative; }
+  .list li:last-child { border-bottom: 1px solid var(--line); }
+  .list li::before { content: ""; position: absolute; left: 4px; top: 21px; width: 11px; height: 11px; border-radius: 50%; box-shadow: inset -4px 2px 0 0 var(--cream); }
+
+  /* 手順 */
+  .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 40px 0 28px; padding: 0; list-style: none; }
+  .steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .steps li::before { content: counter(s); display: block; font-family: var(--mincho); font-size: 40px; line-height: 1; color: var(--cream); margin-bottom: 14px; }
+  .steps p { margin: 0; font-size: 15px; }
+  .box { border-left: 2px solid var(--cream-dim); padding: 4px 0 4px 20px; margin: 0 0 20px; }
+  .box h3 { font-size: 15px; }
+  .box p { font-size: 14.5px; color: var(--sub); margin: 0; }
+  pre { margin: 12px 0 0; background: #05070f; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.7; color: var(--text); }
+
+  /* 仕組み */
+  .mech { margin: 32px 0 0; border-top: 1px solid var(--line); }
+  .mech div { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .mech dt { color: var(--cream); font-weight: 600; font-size: 15px; }
+  .mech dd { margin: 0; color: var(--sub); font-size: 14.5px; }
+
+  /* よくある問い */
+  details { border-top: 1px solid var(--line); padding: 4px 0; }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; padding: 16px 28px 16px 0; list-style: none; position: relative; color: var(--cream); font-weight: 600; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; position: absolute; right: 4px; top: 12px; font-size: 22px; font-weight: 400; color: var(--cream-dim); }
+  details[open] summary::after { content: "−"; }
+  details p { color: var(--sub); font-size: 15px; padding-bottom: 8px; }
+
+  /* 末尾 */
+  .cta { position: relative; text-align: center; padding: 120px 0; overflow: hidden; background: radial-gradient(900px 420px at 50% 0%, rgba(58,69,128,.5), transparent 70%), var(--night); }
+  .cta::before { content: ""; position: absolute; inset: 0; background: url(images/cta-night.jpg) center / cover no-repeat; opacity: .55; }
+  .cta::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,12,31,.75), rgba(8,12,31,.45) 50%, rgba(8,12,31,.9)); }
+  .cta .wrap { position: relative; z-index: 1; }
+  .cta .tag { font-family: var(--mincho); font-size: clamp(26px, 4vw, 44px); line-height: 1.5; color: var(--cream); margin: 0 0 14px; }
+  .cta .btns { justify-content: center; margin-top: 30px; }
+  .en h2 { font-family: Georgia, "Times New Roman", serif; }
+  .en p { max-width: 44em; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--sub); font-size: 13px; text-align: center; }
+
+  @media (max-width: 860px) {
+    .hero, .two { grid-template-columns: 1fr; gap: 36px; }
+    .hero { padding: 28px 0 64px; }
+    .compare, .grid6, .steps { grid-template-columns: 1fr; }
+    .macs { grid-template-columns: 1fr; gap: 36px; }
+    .states { grid-template-columns: 1fr; }
+    .state, .way { grid-column: 1 !important; grid-row: auto !important; }
+    .state.stealth { order: 1; } .way.go { order: 2; } .state.owner { order: 3; } .way.back { order: 4; }
+    .way.go .dir::after { content: "↓"; }
+    .way.back .dir::before { content: "↑"; }
+    .mech div { grid-template-columns: 1fr; gap: 4px; }
+    section { padding: 68px 0; }
+    .nav ul li.hide { display: none; }
   }
-  .cta a:hover { background: #fff; }
-  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13px; text-align: center; }
-  a { color: var(--accent); }
-  .en { margin-top: 72px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <img src="images/icon-1024.png" width="112" height="112" alt="Yamiy のロゴ（三日月）" style="border-radius: 26px;">
-  <h1>Yamiy</h1>
-  <p class="tagline">MacBook を AI に明け渡したい、すべての人へ。</p>
-  <p class="tagline" style="font-size: 14px;">Mac の画面を、真っ暗なまま止めずに保つメニューバーアプリ</p>
-</header>
+<!-- 最初の画面 -->
+<div class="sky">
+  <div class="stars" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav class="nav" aria-label="ページ内の案内">
+      <a class="brand" href="#top" id="top">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#141b45"/><mask id="m0"><rect width="64" height="64" fill="#fff"/><circle cx="25" cy="27" r="17" fill="#000"/></mask><circle cx="33" cy="33" r="19" fill="#f4e7c3" mask="url(#m0)"/><path d="M19 15l1.6 4.4L25 21l-4.4 1.6L19 27l-1.6-4.4L13 21l4.4-1.6z" fill="#f4e7c3"/></svg>
+        </span>
+        Yamiy
+      </a>
+      <ul>
+        <li class="hide"><a href="#how" data-t="nav-1">暗くなる範囲</a></li>
+        <li class="hide"><a href="#mode" data-t="nav-2">画面を戻す方法</a></li>
+        <li><a href="#install" data-t="nav-3">インストール</a></li>
+        <li><a href="en.html" lang="en" hreflang="en">English</a></li>
+        <li><a href="https://github.com/snowkiss13/yamiy">GitHub</a></li>
+      </ul>
+    </nav>
 
-<img class="hero-img" src="images/menu.png" alt="Yamiy のメニュー。状態は真っ暗（ステルス）と表示されている">
+    <header class="hero">
+      <div>
+        <p class="eyebrow"><span data-t="hero-chip-1">メニューバーアプリ</span><span>v0.3.0</span><span data-t="hero-chip-2">MITライセンス</span></p>
+        <!-- タグラインは本人の定めた文面のまま。字間の空白も変えない -->
+        <h1 data-t="hero-tagline"><span>MacBook を AI に</span><span>明け渡したい、</span><span>すべての人へ。</span></h1>
+        <p class="lead">
+          <span data-t="hero-lead-1">Yamiyは、MacBookの画面を真っ暗に保つメニューバーアプリです。</span
+          ><span data-t="hero-lead-2">ディスプレイはスリープさせないので、画面キャプチャとリモート操作は動き続けます。</span>
+        </p>
+        <div class="btns">
+          <a class="btn btn-main" href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip" data-t="hero-btn-1">Yamiy-0.3.0.zipをダウンロード</a>
+          <a class="btn btn-sub" href="https://github.com/snowkiss13/yamiy" data-t="hero-btn-2">GitHubでソースを見る</a>
+        </div>
+        <p class="fine" data-t="hero-fine">Apple Silicon Mac、macOS 14以降で動きます。</p>
+      </div>
 
-<h2>これは何か</h2>
-<p>AI エージェントや自動処理を Mac で常時走らせていると、画面はつけっぱなしになります。中身を他人に見られたくない。でもディスプレイをスリープさせると、リモート操作や自動処理の都合が悪くなる場面があります。</p>
-<p>Yamiy はその間で使います。明るさを最低に固定し、明るさキーも効かなくして、画面を物理的に真っ暗に保ちます。外部ディスプレイがつながっていれば、そちらも無効にできます。画面そのものは起きているので、キャプチャもリモート操作もそのまま動きます。本人が Touch ID でロックを解除したときだけ画面が戻り、5 分触らなければ自動で真っ暗に戻ります。フタを閉じれば、5 分を待たずその場で真っ暗になります。</p>
-
-<div class="cards">
-  <div class="card">
-    <h3>明るさを 0 に保持</h3>
-    <p>自動調節などに押し戻されても、0.15 秒ごとに最低へ戻し続けます。</p>
-  </div>
-  <div class="card">
-    <h3>明るさキーを無効化</h3>
-    <p>内蔵キーボードのキーはイベントタップで受けて捨て、外付け向けのリマップも併用。押しても画面は光りません（アクセシビリティ許可が必要）。</p>
-  </div>
-  <div class="card">
-    <h3>外部ディスプレイも無効化</h3>
-    <p>設定でオンにすると、ステルス中は外部ディスプレイをオフラインにします。途中でつないでも、その場で無効になります。</p>
-  </div>
-  <div class="card">
-    <h3>フタを閉じたら即、真っ暗</h3>
-    <p>5 分の無操作を待たず、フタを閉じた瞬間にステルスへ入ります。開けても、解除するまで暗いままです。</p>
-  </div>
-  <div class="card">
-    <h3>本人モードは解除のときだけ</h3>
-    <p>入口は画面ロック解除（Touch ID／パスワード）だけ。無操作 5 分で自動復帰します。</p>
-  </div>
-  <div class="card">
-    <h3>画面スリープはしない</h3>
-    <p>キャプチャやリモート操作は明るさと無関係に動き続けます（実測済み）。</p>
+      <div class="slot slot-hero" role="img" aria-label="夜の机に置かれた、画面が真っ暗なノートパソコンと、窓の外の三日月の絵">
+        <svg viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2658"/><stop offset="1" stop-color="#0a0f26"/></linearGradient>
+            <mask id="m1"><rect width="640" height="480" fill="#fff"/><circle cx="436" cy="112" r="62" fill="#000"/></mask>
+            <radialGradient id="g2" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f4e7c3" stop-opacity=".22"/><stop offset="1" stop-color="#f4e7c3" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="640" height="480" fill="url(#g1)"/>
+          <circle cx="462" cy="132" r="170" fill="url(#g2)"/>
+          <circle cx="462" cy="132" r="70" fill="#f4e7c3" mask="url(#m1)"/>
+          <g fill="#f4e7c3">
+            <path d="M360 70l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+            <circle cx="120" cy="80" r="1.6"/><circle cx="210" cy="140" r="1.2"/><circle cx="560" cy="60" r="1.4"/><circle cx="80" cy="190" r="1.2"/><circle cx="300" cy="50" r="1.3"/><circle cx="585" cy="210" r="1.2"/>
+          </g>
+          <rect x="0" y="392" width="640" height="88" fill="#070a1a"/>
+          <rect x="0" y="390" width="640" height="2" fill="#f4e7c3" opacity=".18"/>
+          <rect x="182" y="196" width="276" height="180" rx="12" fill="#2b3150" stroke="#f4e7c3" stroke-opacity=".35"/>
+          <rect x="194" y="208" width="252" height="156" rx="5" fill="#020308"/>
+          <path d="M150 376h340l22 16H128z" fill="#3b4162"/>
+          <rect x="282" y="380" width="76" height="5" rx="2.5" fill="#20253f"/>
+          <g stroke="#f4e7c3" stroke-opacity=".28" stroke-width="1.5" fill="none" stroke-linecap="round">
+            <path d="M214 330h60M214 344h96M214 316h40"/>
+          </g>
+        </svg>
+      </div>
+    </header>
   </div>
 </div>
 
-<h2>使い方</h2>
-<ol>
-  <li>起動するとステルス状態（真っ暗＋明るさキー無効）になります</li>
-  <li>本人モードにする: Touch ID ボタンで画面をロックし、指紋で解除する</li>
-  <li>ステルスに戻す: もう一度ロックする。フタを閉じる。または 5 分間何も触らない</li>
-  <li>終了する: メニューの「Yamiy を終了」。キーと明るさと外部ディスプレイは元に戻ります</li>
-</ol>
-<p class="sub">メニューの「設定を開く…」からは、本人モードの明るさ、真っ暗に戻るまでの無操作時間、ログイン時に起動するかどうか、外部ディスプレイも無効にするかどうかを変更できます。</p>
+<main>
 
-<h2>インストール</h2>
-<ol>
-  <li><a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.4/Yamiy-0.2.4.zip">Yamiy-0.2.4.zip</a> をダウンロードして展開する</li>
-  <li><code>Yamiy.app</code> を「アプリケーション」フォルダへ移す</li>
-  <li>初回だけ、Finder で右クリック → 開く を選ぶ</li>
-</ol>
-<p class="sub">Developer ID で署名済みですが公証はまだ受けていないため、初回は Gatekeeper で止められますが、手順 3 で開けます。明るさキーを完全に止めるには、システム設定 → プライバシーとセキュリティ → アクセシビリティ で Yamiy を許可してください。ログイン時に自動で起動させたい場合は、アプリ内の設定で「ログイン時に起動」をオンにしてください。ソースからビルドする場合は <code>git clone</code> して <code>./build.sh</code> です（Xcode コマンドラインツールが必要）。</p>
-<p class="sub">動作環境: Apple Silicon Mac、macOS 14 以降（開発と確認は macOS 27）。明るさの制御に DisplayServices の私的 API を使うため、Mac App Store では配布できません。</p>
+<!-- 困りごと -->
+<section id="why">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <p class="kicker" data-t="why-kicker">なぜ作ったか</p>
+        <h2 data-t="why-h2">画面の中身は見られたくない。でもディスプレイをスリープさせると、リモート操作や自動処理に支障が出る</h2>
+        <p>
+          <span data-t="why-1">AIエージェントや自動処理をMacで常時走らせていると、画面はつけっぱなしになります。</span
+          ><span data-t="why-2">画面の中身を、他人には見られたくありません。</span
+          ><span data-t="why-3">一方で、ディスプレイをスリープさせると、リモート操作や自動処理がうまくいかない場面があります。</span>
+        </p>
+        <p>
+          <span data-t="why-4">Yamiyは、この2つを両立させるアプリです。</span>
+        </p>
+      </div>
+      <div class="slot slot-lit" role="img" aria-label="暗い部屋で、つけっぱなしのノートパソコンの画面だけが光っている絵">
+        <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><radialGradient id="g3" cx="50%" cy="52%" r="55%"><stop offset="0" stop-color="#f4e7c3" stop-opacity=".5"/><stop offset="1" stop-color="#f4e7c3" stop-opacity="0"/></radialGradient></defs>
+          <rect width="600" height="400" fill="#080c1f"/>
+          <ellipse cx="300" cy="210" rx="300" ry="200" fill="url(#g3)"/>
+          <rect x="0" y="318" width="600" height="82" fill="#05070f"/>
+          <rect x="196" y="146" width="208" height="140" rx="10" fill="#2b3150"/>
+          <rect x="206" y="156" width="188" height="120" rx="4" fill="#f6efd9"/>
+          <g fill="#151a3a" opacity=".5"><rect x="220" y="172" width="90" height="8" rx="4"/><rect x="220" y="190" width="150" height="8" rx="4"/><rect x="220" y="208" width="120" height="8" rx="4"/><rect x="220" y="226" width="70" height="8" rx="4"/><rect x="220" y="244" width="136" height="8" rx="4"/></g>
+          <path d="M170 286h260l18 14H152z" fill="#3b4162"/>
+        </svg>
+      </div>
+    </div>
 
+    <div class="compare">
+      <div class="opt">
+        <div class="mini on" aria-hidden="true"><i></i></div>
+        <h3 data-t="cmp-1-h">画面をつけたままにする</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">画面の中身</dt><dd class="bad" data-t="cmp-1-a">そばにいる人に見える</dd>
+          <dt data-t="cmp-dt-2">リモート操作と自動処理</dt><dd class="good" data-t="cmp-1-b">動き続ける</dd>
+        </dl>
+      </div>
+      <div class="opt">
+        <div class="mini sleep" aria-hidden="true">zzz</div>
+        <h3 data-t="cmp-2-h">ディスプレイをスリープさせる</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">画面の中身</dt><dd class="good" data-t="cmp-2-a">見えない</dd>
+          <dt data-t="cmp-dt-2">リモート操作と自動処理</dt><dd class="bad" data-t="cmp-2-b">うまくいかない場面がある</dd>
+        </dl>
+      </div>
+      <div class="opt pick">
+        <div class="mini dark" aria-hidden="true"><svg viewBox="0 0 64 64"><mask id="m2"><rect width="64" height="64" fill="#fff"/><circle cx="24" cy="26" r="20" fill="#000"/></mask><circle cx="33" cy="33" r="23" fill="#f4e7c3" mask="url(#m2)"/></svg></div>
+        <h3 data-t="cmp-3-h">Yamiyで真っ暗に保つ</h3>
+        <dl>
+          <dt data-t="cmp-dt-1">画面の中身</dt><dd class="good" data-t="cmp-3-a">真っ暗で見えない</dd>
+          <dt data-t="cmp-dt-2">リモート操作と自動処理</dt><dd class="good" data-t="cmp-3-b">画面キャプチャとリモート操作は動き続ける</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 暗くなる範囲 -->
+<section id="how" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="how-kicker">暗くなる範囲</p>
+    <h2 data-t="how-h2">Yamiyが下げるのはディスプレイの明るさ。画面キャプチャとリモート操作では、いつもの画面が見える</h2>
+    <p class="narrow">
+      <span data-t="how-1">Yamiyは、ディスプレイの明るさを0に固定します。</span
+      ><span data-t="how-2">画面そのものは起きたままです。</span
+      ><span data-t="how-3">画面キャプチャとリモート操作は、明るさと関係なく動き続けます。</span>
+    </p>
+
+    <div class="macs">
+      <figure class="mac">
+        <div class="lid"><div class="screen black"></div></div>
+        <div class="base"></div>
+        <figcaption><span data-t="fig-1">Macの前にいる人に見える画面</span><small data-t="fig-1s">明るさは0で、真っ暗です</small></figcaption>
+      </figure>
+      <figure class="mac">
+        <div class="lid"><div class="screen live">
+          <div class="bar"><i class="moon"></i><i></i><i></i></div>
+          <div class="term"><b></b><b></b><b></b><b></b><b></b><em></em></div>
+          <div class="side"><i></i><i></i><i></i></div>
+        </div></div>
+        <div class="base"></div>
+        <figcaption><span data-t="fig-2">画面キャプチャとリモート操作に映る画面</span><small data-t="fig-2s">同じ時刻の、同じMacです</small></figcaption>
+      </figure>
+    </div>
+    <p class="note" data-t="fig-note">上の2台は説明のための図で、実際の画面を写したものではありません。</p>
+  </div>
+</section>
+
+<!-- 画面を戻す方法 -->
+<section id="mode">
+  <div class="wrap">
+    <p class="kicker" data-t="mode-kicker">画面を戻す方法</p>
+    <h2 data-t="mode-h2">画面が明るく戻るのは、Touch IDでロックを解除したときだけ</h2>
+    <p class="narrow">
+      <span data-t="mode-1">Yamiyを起動すると、ステルスの状態になります。</span
+      ><span data-t="mode-2">ステルスでは、画面は真っ暗で、明るさキーも効きません。</span
+      ><span data-t="mode-3">画面を明るく使える状態を、本人モードと呼びます。</span>
+    </p>
+
+    <div class="states">
+      <div class="state stealth">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><mask id="m3"><rect width="64" height="64" fill="#fff"/><circle cx="24" cy="26" r="20" fill="#000"/></mask><circle cx="33" cy="33" r="23" fill="#f4e7c3" mask="url(#m3)"/></svg>
+        <p class="name" data-t="st-1-name">ステルス</p>
+        <p data-t="st-1-a">画面は真っ暗です。</p>
+        <p data-t="st-1-b">明るさキーは効きません。</p>
+        <p data-t="st-1-c">起動した直後はこの状態です。</p>
+      </div>
+      <div class="way go">
+        <p class="dir" data-t="way-go-dir">本人モードへ入る</p>
+        <ul>
+          <li data-t="way-go-1">Touch IDのボタンで画面をロックし、指紋で解除する</li>
+        </ul>
+      </div>
+      <div class="way back">
+        <p class="dir" data-t="way-back-dir">ステルスへ戻る</p>
+        <ul>
+          <li data-t="way-back-1">もう一度ロックする</li>
+          <li data-t="way-back-2">フタを閉じる</li>
+          <li data-t="way-back-3">5分間、何も触らない</li>
+        </ul>
+      </div>
+      <div class="state owner">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="13" fill="#151a3a"/><g stroke="#151a3a" stroke-width="4" stroke-linecap="round"><path d="M32 6v7M32 51v7M6 32h7M51 32h7M13.6 13.6l5 5M45.4 45.4l5 5M13.6 50.4l5-5M45.4 18.6l5-5"/></g></svg>
+        <p class="name" data-t="st-2-name">本人モード</p>
+        <p data-t="st-2-a">画面が明るく戻ります。</p>
+        <p data-t="st-2-b">明るさは設定で決められます。</p>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3 data-t="lid-h3">フタを閉じると、5分を待たずに真っ暗になります</h3>
+        <p>
+          <span data-t="lid-1">フタを閉じた時点で、Yamiyはステルスへ入ります。</span
+          ><span data-t="lid-2">フタを開けても、ロックを解除するまで画面は暗いままです。</span>
+        </p>
+        <p class="sub">
+          <span data-t="lid-3">ステルスへ戻るまでの無操作の時間は、最初は5分です。</span
+          ><span data-t="lid-4">この時間は設定で変えられます。</span>
+        </p>
+      </div>
+      <div class="slot slot-lid" role="img" aria-label="フタを半分閉じたノートパソコンと三日月の絵">
+        <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><mask id="m4"><rect width="600" height="400" fill="#fff"/><circle cx="424" cy="96" r="44" fill="#000"/></mask></defs>
+          <rect width="600" height="400" fill="#0b1026"/>
+          <circle cx="442" cy="110" r="50" fill="#f4e7c3" mask="url(#m4)"/>
+          <path d="M360 70l2.4 6.6L369 79l-6.6 2.4L360 88l-2.4-6.6L351 79l6.6-2.4z" fill="#f4e7c3"/>
+          <rect x="0" y="300" width="600" height="100" fill="#05070f"/>
+          <path d="M170 284h250l14 16H156z" fill="#3b4162"/>
+          <path d="M176 284L330 178l10 10-150 100z" fill="#2b3150" stroke="#f4e7c3" stroke-opacity=".3"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6つの働き -->
+<section id="features" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="feat-kicker">Yamiyがしていること</p>
+    <h2 data-t="feat-h2">画面を真っ暗に保つために、Yamiyがしている6つのこと</h2>
+    <div class="grid6">
+      <div class="card">
+        <p class="num">01</p>
+        <h3 data-t="feat-1-h">明るさを0へ戻し続ける</h3>
+        <p>
+          <span data-t="feat-1-a">明るさは、一度0にしただけでは自動調節などに押し戻されます。</span
+          ><span data-t="feat-1-b">Yamiyは0.15秒ごとに、明るさを最低へ戻します。</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">02</p>
+        <h3 data-t="feat-2-h">明るさキーを効かなくする</h3>
+        <p>
+          <span data-t="feat-2-a">内蔵キーボードの明るさキーは、イベントタップで受けて捨てます。</span
+          ><span data-t="feat-2-b">外付けキーボードには<code>hidutil</code>のリマップを併用します。</span
+          ><span data-t="feat-2-c">イベントタップには、アクセシビリティの許可が必要です。</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">03</p>
+        <h3 data-t="feat-3-h">フタを閉じたら、すぐステルスへ入る</h3>
+        <p>
+          <span data-t="feat-3-a">無操作の5分を待ちません。</span
+          ><span data-t="feat-3-b">フタを開けても、ロックを解除するまで暗いままです。</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">04</p>
+        <h3 data-t="feat-4-h">外部ディスプレイも無効にできる</h3>
+        <p>
+          <span data-t="feat-4-a">外部ディスプレイは、設定で無効にできます。</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">05</p>
+        <h3 data-t="feat-5-h">本人モードの入口を1つに絞る</h3>
+        <p>
+          <span data-t="feat-5-a">本人モードへ入れるのは、Touch IDでロックを解除したときだけです。</span
+          ><span data-t="feat-5-b">何も触らずに5分たつと、自動でステルスへ戻ります。</span>
+        </p>
+      </div>
+      <div class="card">
+        <p class="num">06</p>
+        <h3 data-t="feat-6-h">ディスプレイをスリープさせない</h3>
+        <p>
+          <span data-t="feat-6-a">Yamiyは明るさを下げるだけで、ディスプレイをスリープさせません。</span
+          ><span data-t="feat-6-b">画面キャプチャとリモート操作は続きます。</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- メニュー -->
+<section id="menu">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <p class="kicker" data-t="menu-kicker">ふだんの操作</p>
+        <h2 data-t="menu-h2">いまの状態は、メニューバーの三日月を押すと見られる</h2>
+        <p>
+          <span data-t="menu-1">メニューバーにある三日月のアイコンを押すと、メニューが開きます。</span
+          ><span data-t="menu-2">メニューの「設定を開く…」からは、次の8つを変えられます。</span>
+        </p>
+        <ul class="list">
+          <li data-t="menu-li-1">本人モードの明るさ</li>
+          <li data-t="menu-li-2">真っ暗に戻るまでの無操作の時間</li>
+          <li data-t="menu-li-3">ログイン時に起動するかどうか</li>
+          <li data-t="menu-li-4">外部ディスプレイも無効にするかどうか</li>
+          <li data-t="menu-li-5">無操作で真っ暗に戻るかどうか</li>
+          <li data-t="menu-li-6">フタを閉じたら真っ暗にするかどうか</li>
+          <li data-t="menu-li-7">明るさキーを無効にするかどうか</li>
+          <li data-t="menu-li-8">前回の明るさを引き継ぐかどうか</li>
+        </ul>
+        <p class="sub">
+          <span data-t="menu-3">終了するときは、メニューの「Yamiy を終了」を選びます。</span
+          ><span data-t="menu-4">終了すると、キーと明るさは元に戻ります。</span>
+        </p>
+      </div>
+      <figure class="shot">
+        <object data="images/menu.png" type="image/png" aria-label="Yamiyのメニューを写した画像">
+          <!-- menu.png が無いときだけ、この絵が出る -->
+          <div class="slot" style="aspect-ratio: 4 / 3;" aria-hidden="true">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><rect width="400" height="300" fill="#0b1026"/><rect width="400" height="34" fill="#05070f"/><mask id="m5"><rect width="400" height="300" fill="#fff"/><circle cx="337" cy="15" r="8" fill="#000"/></mask><circle cx="341" cy="17" r="9" fill="#f4e7c3" mask="url(#m5)"/><rect x="190" y="44" width="186" height="196" rx="12" fill="#151c42" stroke="#f4e7c3" stroke-opacity=".25"/><g fill="#f4e7c3" opacity=".35"><rect x="208" y="66" width="110" height="9" rx="4.5"/><rect x="208" y="104" width="140" height="9" rx="4.5"/><rect x="208" y="134" width="96" height="9" rx="4.5"/><rect x="208" y="186" width="120" height="9" rx="4.5"/></g><g stroke="#f4e7c3" stroke-opacity=".18"><path d="M202 88h162M202 166h162"/></g></svg>
+          </div>
+        </object>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- インストール -->
+<section id="install" class="alt">
+  <div class="wrap">
+    <p class="kicker" data-t="inst-kicker">インストール</p>
+    <h2 data-t="inst-h2">インストールは3手順。ダウンロードして、アプリケーションフォルダへ移すだけ</h2>
+    <ol class="steps">
+      <li><p><span data-t="inst-s1"><a href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip">Yamiy-0.3.0.zip</a>をダウンロードして展開します。</span></p></li>
+      <li><p><span data-t="inst-s2"><code>Yamiy.app</code>をアプリケーションフォルダへ移します。</span></p></li>
+      <li><p><span data-t="inst-s3"><code>Yamiy.app</code>をダブルクリックで開きます。</span></p></li>
+    </ol>
+
+    <div class="two" style="align-items: start;">
+      <div>
+        <div class="box">
+          <h3 data-t="inst-b1-h">署名と公証</h3>
+          <p>
+            <span data-t="inst-b1-a">YamiyはDeveloper IDで署名し、Appleの公証を受けています。</span
+            ><span data-t="inst-b1-b">そのままダブルクリックで開けます。</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b2-h">明るさキーを完全に止めるための許可</h3>
+          <p>
+            <span data-t="inst-b2-a">システム設定のプライバシーとセキュリティにあるアクセシビリティで、Yamiyを許可してください。</span
+            ><span data-t="inst-b2-b">許可が無くても、明るさの保持だけで画面は暗いままです。</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b3-h">ログイン時に自動で起動する設定</h3>
+          <p>
+            <span data-t="inst-b3-a">アプリ内の設定で、ログイン時の起動をオンにできます。</span>
+          </p>
+        </div>
+      </div>
+      <div>
+        <div class="box">
+          <h3 data-t="inst-b4-h">動作環境</h3>
+          <p>
+            <span data-t="inst-b4-a">Apple Silicon Macと、macOS 14以降が必要です。</span
+            ><span data-t="inst-b4-b">開発と確認はmacOS 27で行っています。</span>
+          </p>
+        </div>
+        <div class="box">
+          <h3 data-t="inst-b5-h">ソースからビルドする場合</h3>
+          <p>
+            <span data-t="inst-b5-a">Xcodeのコマンドラインツールが必要です。</span
+            ><span data-t="inst-b5-b">リポジトリを取得して、次の2行を実行します。</span>
+          </p>
+          <pre>./build.sh
+open build/Yamiy.app</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 仕組み -->
+<section id="inside">
+  <div class="wrap">
+    <p class="kicker" data-t="in-kicker">仕組み</p>
+    <h2 data-t="in-h2">macOSの私的APIを使うので、Mac App StoreではなくGitHubで配っている</h2>
+    <p class="narrow">
+      <span data-t="in-1">Yamiyは、DisplayServicesとSkyLightという私的APIを使います。</span
+      ><span data-t="in-2">私的APIを使うアプリは、Mac App Storeでは配布できません。</span
+      ><span data-t="in-3">ソースコードはMITライセンスで公開しています。</span>
+    </p>
+    <dl class="mech">
+      <div><dt data-t="in-dt-1">明るさの制御</dt><dd data-t="in-dd-1">DisplayServicesの私的APIで明るさを設定し、0.15秒ごとに最低へ戻します。</dd></div>
+      <div><dt data-t="in-dt-2">明るさキーの無効化</dt><dd data-t="in-dd-2">内蔵キーボードのキーはイベントタップで受け、外付けキーボードには<code>hidutil</code>のリマップを併用します。</dd></div>
+      <div><dt data-t="in-dt-3">外部ディスプレイ</dt><dd data-t="in-dd-3">SkyLightの私的APIを使います。設定で無効にできます。</dd></div>
+      <div><dt data-t="in-dt-4">フタの開閉</dt><dd data-t="in-dd-4">IOKitのclamshellの状態を見張ります。</dd></div>
+      <div><dt data-t="in-dt-5">ロックと解除の検知</dt><dd data-t="in-dd-5">システムの配信通知を使います。</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- 入れる前の問い -->
+<section id="faq" class="alt">
+  <div class="wrap narrow">
+    <p class="kicker" data-t="faq-kicker">入れる前に</p>
+    <h2 data-t="faq-h2">Yamiyを入れる前に確かめておきたい4つのこと</h2>
+    <details open>
+      <summary data-t="faq-q1">Yamiyが動いている間、ディスプレイはスリープしますか</summary>
+      <p><span data-t="faq-a1">Yamiyはディスプレイをスリープさせません。</span
+        ><span data-t="faq-a1b">画面キャプチャとリモート操作は続きます。</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q2">アクセシビリティを許可しないと、どうなりますか</summary>
+      <p><span data-t="faq-a2">明るさの保持は働くので、画面は暗いままです。</span
+        ><span data-t="faq-a2b">明るさキーを完全に止めるには、許可が必要です。</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q3">Yamiyを終了すると、画面とキーはどうなりますか</summary>
+      <p><span data-t="faq-a3">キーと明るさは、元に戻ります。</span></p>
+    </details>
+    <details>
+      <summary data-t="faq-q4">Intel Macや、macOS 13以前でも動きますか</summary>
+      <p><span data-t="faq-a4">動作環境はApple Silicon Macと、macOS 14以降です。</span></p>
+    </details>
+  </div>
+</section>
+
+<!-- 末尾 -->
 <div class="cta">
-  <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.2.4/Yamiy-0.2.4.zip">ダウンロード（v0.2.4）</a>
-  <a href="https://github.com/snowkiss13/yamiy" style="background: transparent; color: var(--text); border: 1px solid var(--line); margin-left: 8px;">GitHub で見る</a>
+  <div class="wrap">
+    <p class="tag" data-t="cta-tagline">MacBook を AI に明け渡したい、すべての人へ。</p>
+    <p class="sub" data-t="cta-1">画面は真っ暗なまま、画面キャプチャとリモート操作は続きます。</p>
+    <div class="btns">
+      <a class="btn btn-main" href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip" data-t="cta-btn-1">Yamiy-0.3.0.zipをダウンロード</a>
+      <a class="btn btn-sub" href="https://github.com/snowkiss13/yamiy/releases/tag/v0.3.0" data-t="cta-btn-2">v0.3.0のリリースを見る</a>
+    </div>
+  </div>
 </div>
 
-<div class="en">
-<h2>What is Yamiy? (English)</h2>
-<p>If you run AI agents or automations on your Mac around the clock, the display stays on. You do not want anyone peeking at what is on it — but putting the display to sleep gets in the way of remote control and automation.</p>
-<p>Yamiy sits in between. It holds the brightness at zero and disables the brightness keys, so the panel is physically dark while the machine stays fully awake: screen capture and remote control keep working, because brightness and the framebuffer are independent (verified). External displays can be taken offline too. The screen comes back only when you unlock it with Touch ID, and it goes dark again by itself after five minutes without input — or the moment you close the lid.</p>
-<p>Yamiy is open source under the MIT License. Download the app from <a href="https://github.com/snowkiss13/yamiy/releases/latest">Releases</a> (right-click → Open on first launch; it is Developer ID signed, not notarized yet), or build it from source with <code>./build.sh</code>. See the <a href="https://github.com/snowkiss13/yamiy">GitHub repository</a> for details. It uses private DisplayServices and SkyLight APIs, so it cannot be distributed on the Mac App Store. Requires an Apple Silicon Mac with macOS 14 or later.</p>
-</div>
+<!-- English -->
+<section id="english" class="en" lang="en">
+  <div class="wrap">
+    <p class="kicker">English</p>
+    <h2>Yamiy keeps your MacBook's screen dark without putting the display to sleep</h2>
+    <p>For everyone who wants to hand their MacBook over to AI.</p>
+    <p><a class="btn btn-sub" href="en.html">Read the full English page</a></p>
+    <p>If you run AI agents or automations on your Mac around the clock, the display stays on. You do not want anyone to see what is on it, but putting the display to sleep gets in the way of remote control and automation.</p>
+    <p>Yamiy holds the brightness at zero, re-asserting it every 0.15 seconds, and disables the brightness keys. The display stays awake, so screen capture and remote control keep working. External displays can be disabled in Settings. The screen comes back only when you unlock with Touch ID. It goes dark again after five minutes without input, or the moment you close the lid.</p>
+    <p>Download <a href="https://github.com/snowkiss13/yamiy/releases/download/v0.3.0/Yamiy-0.3.0.zip">Yamiy-0.3.0.zip</a>, unzip it, and move <code>Yamiy.app</code> to your Applications folder. The app is signed with a Developer ID but not notarized yet, so on first launch right-click it in Finder and choose Open. To fully block the brightness keys, allow Yamiy under System Settings, Privacy &amp; Security, Accessibility.</p>
+    <p class="sub">Requires an Apple Silicon Mac with macOS 14 or later. Yamiy uses the private DisplayServices and SkyLight APIs, so it cannot be distributed on the Mac App Store. It is open source under the MIT License at <a href="https://github.com/snowkiss13/yamiy">github.com/snowkiss13/yamiy</a></p>
+  </div>
+</section>
+
+</main>
 
 <footer>
-  Yamiy — MIT License — <a href="https://github.com/snowkiss13/yamiy">github.com/snowkiss13/yamiy</a>
+  <div class="wrap">Yamiy v0.3.0 · MIT License · <a href="https://github.com/snowkiss13/yamiy">github.com/snowkiss13/yamiy</a></div>
 </footer>
 
-</div>
 </body>
 </html>
