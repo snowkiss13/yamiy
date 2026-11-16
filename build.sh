@@ -6,7 +6,7 @@ APP="build/Yamiy.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 swiftc -O -o "$APP/Contents/MacOS/Yamiy" Sources/main.swift \
-    -framework AppKit -framework CoreGraphics -framework ServiceManagement
+    -framework AppKit -framework CoreGraphics -framework ServiceManagement -framework IOKit
 cp Info.plist "$APP/Contents/Info.plist"
 # App icon: build AppIcon.icns from AppIcon.iconset when iconutil is available.
 if command -v iconutil >/dev/null 2>&1 && [ -d AppIcon.iconset ]; then

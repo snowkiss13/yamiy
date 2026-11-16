@@ -669,6 +669,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     // version that is not in this list is added to the menu as it is.
     private let idleChoices: [Double] = [60, 120, 180, 300, 600, 900, 1800, 3600]
 
+    private let settingsWindowSize = NSSize(width: 780, height: 560)
+
     convenience init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
@@ -702,10 +704,20 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         main.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(main)
 
-        let divider = NSBox()
-        divider.boxType = .separator
+        // A plain view, not an NSBox separator: a separator box has an
+        // intrinsic size of its own, and this line is pinned to the full
+        // height of the window.
+        let divider = NSView()
+        divider.wantsLayer = true
+        divider.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.12).cgColor
         divider.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(divider)
+
+        // The window has one fixed size. Stating it as constraints means
+        // nothing inside can shrink or stretch the window during layout.
+        let fixedWidth = content.widthAnchor.constraint(equalToConstant: settingsWindowSize.width)
+        let fixedHeight = content.heightAnchor.constraint(equalToConstant: settingsWindowSize.height)
+        NSLayoutConstraint.activate([fixedWidth, fixedHeight])
 
         NSLayoutConstraint.activate([
             sidebar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
@@ -990,6 +1002,29 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    // Puts the window on screen and writes what actually happened to
+    // yamiy.log. Returns false when the window is not usable (missing,
+    // not visible, or far from its intended size), so the caller can
+    // open the plain window instead.
+    func presentOnScreen() -> Bool {
+        guard let w = window else {
+            yamiyLog("settings: sidebar window is missing")
+            return false
+        }
+        w.setContentSize(settingsWindowSize)
+        w.center()
+        showWindow(nil)
+        w.makeKeyAndOrderFront(nil)
+        // An accessory app is not always made active by the system, and a
+        // window of an inactive app can open behind the frontmost app.
+        w.orderFrontRegardless()
+        let f = w.frame
+        let onScreen = (w.screen != nil)
+        yamiyLog("settings: sidebar window shown. frame=\(Int(f.origin.x)),\(Int(f.origin.y)) \(Int(f.width))x\(Int(f.height)) visible=\(w.isVisible) key=\(w.isKeyWindow) onScreen=\(onScreen) appActive=\(NSApp.isActive)")
+        let sizeOK = f.width >= settingsWindowSize.width * 0.8 && f.height >= settingsWindowSize.height * 0.8
+        return w.isVisible && onScreen && sizeOK
+    }
+
     override func showWindow(_ sender: Any?) {
         super.showWindow(sender)
         statusTimer?.invalidate()
@@ -1079,6 +1114,189 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 }
 
+// MARK: - Settings window (plain fallback, added in 0.3.1)
+
+// 0.3.0 shipped with the sidebar window above never having been seen on
+// a real machine, and on the owner's Mac it did not open. This plain
+// window is built the way the 0.2.x window was (one vertical stack
+// pinned to the top-left corner, no gravity areas, no layers), which is
+// known to open. AppDelegate.showSettings uses it whenever the sidebar
+// window failed to build or to show, so Settings can always be reached.
+// It edits the same UserDefaults keys through the same Prefs object.
+final class SimpleSettingsWindowController: NSWindowController {
+    private let brightnessSlider = NSSlider(value: 0.65, minValue: 0.1, maxValue: 1.0, target: nil, action: nil)
+    private let brightnessValue = NSTextField(labelWithString: "")
+    private let idleSlider = NSSlider(value: 300, minValue: 60, maxValue: 3600, target: nil, action: nil)
+    private let idleValue = NSTextField(labelWithString: "")
+    private let idleCheckbox = NSButton(checkboxWithTitle: L("stealth.idle"), target: nil, action: nil)
+    private let lidCheckbox = NSButton(checkboxWithTitle: L("stealth.lid"), target: nil, action: nil)
+    private let keysCheckbox = NSButton(checkboxWithTitle: L("stealth.keys"), target: nil, action: nil)
+    private let externalCheckbox = NSButton(checkboxWithTitle: L("stealth.external"), target: nil, action: nil)
+    private let rememberCheckbox = NSButton(checkboxWithTitle: L("owner.remember"), target: nil, action: nil)
+    private let loginCheckbox = NSButton(checkboxWithTitle: L("general.login"), target: nil, action: nil)
+
+    convenience init() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 480, height: 330),
+            styleMask: [.titled, .closable],
+            backing: .buffered, defer: false)
+        window.title = L("settings.title")
+        window.isReleasedWhenClosed = false
+        self.init(window: window)
+        buildContent()
+        refresh()
+    }
+
+    private func row(_ label: String, _ control: NSView, _ value: NSTextField) -> NSStackView {
+        let l = NSTextField(labelWithString: label)
+        l.font = .systemFont(ofSize: 12)
+        l.alignment = .right
+        l.widthAnchor.constraint(equalToConstant: 210).isActive = true
+        let s = NSStackView(views: [l, control, value])
+        s.orientation = .horizontal
+        s.spacing = 8
+        s.alignment = .centerY
+        control.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        return s
+    }
+
+    private func buildContent() {
+        guard let content = window?.contentView else { return }
+        brightnessSlider.target = self
+        brightnessSlider.action = #selector(brightnessChanged)
+        idleSlider.target = self
+        idleSlider.action = #selector(idleChanged)
+        idleCheckbox.target = self
+        idleCheckbox.action = #selector(idleCheckboxChanged)
+        lidCheckbox.target = self
+        lidCheckbox.action = #selector(lidChanged)
+        keysCheckbox.target = self
+        keysCheckbox.action = #selector(keysChanged)
+        externalCheckbox.target = self
+        externalCheckbox.action = #selector(externalChanged)
+        rememberCheckbox.target = self
+        rememberCheckbox.action = #selector(rememberChanged)
+        loginCheckbox.target = self
+        loginCheckbox.action = #selector(loginChanged)
+
+        let stack = NSStackView(views: [
+            row(L("owner.brightness"), brightnessSlider, brightnessValue),
+            row(L("stealth.idle.time"), idleSlider, idleValue),
+            idleCheckbox,
+            lidCheckbox,
+            keysCheckbox,
+            externalCheckbox,
+            rememberCheckbox,
+            loginCheckbox,
+        ])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 16),
+            stack.topAnchor.constraint(equalTo: content.topAnchor, constant: 16),
+        ])
+    }
+
+    func refresh() {
+        brightnessSlider.doubleValue = Double(Prefs.shared.ownerBrightness)
+        idleSlider.doubleValue = Prefs.shared.idleSeconds
+        idleSlider.isEnabled = Prefs.shared.idleReturnEnabled
+        idleCheckbox.state = Prefs.shared.idleReturnEnabled ? .on : .off
+        lidCheckbox.state = Prefs.shared.stealthOnLidClose ? .on : .off
+        keysCheckbox.state = Prefs.shared.blockBrightnessKeys ? .on : .off
+        externalCheckbox.state = Prefs.shared.disableExternalDisplays ? .on : .off
+        rememberCheckbox.state = Prefs.shared.rememberOwnerBrightness ? .on : .off
+        rememberCheckbox.isEnabled = (dsGet != nil)
+        loginCheckbox.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
+        updateLabels()
+    }
+
+    private func updateLabels() {
+        brightnessValue.stringValue = "\(Int((brightnessSlider.doubleValue * 100).rounded()))%"
+        idleValue.stringValue = LF("time.minutes", Int((idleSlider.doubleValue / 60).rounded()))
+    }
+
+    @objc private func brightnessChanged() {
+        let v = Float(brightnessSlider.doubleValue)
+        Prefs.shared.ownerBrightness = v
+        updateLabels()
+        if !yamiyInStealth { setBrightness(v) }
+    }
+
+    @objc private func idleChanged() {
+        // Whole minutes, never less than one.
+        let minutes = max(1.0, (idleSlider.doubleValue / 60).rounded())
+        Prefs.shared.idleSeconds = minutes * 60
+        updateLabels()
+    }
+
+    @objc private func idleCheckboxChanged() {
+        Prefs.shared.idleReturnEnabled = (idleCheckbox.state == .on)
+        idleSlider.isEnabled = Prefs.shared.idleReturnEnabled
+        yamiyLog("idle return -> \(idleCheckbox.state == .on)")
+    }
+
+    @objc private func lidChanged() {
+        Prefs.shared.stealthOnLidClose = (lidCheckbox.state == .on)
+        yamiyLog("stealth on lid close -> \(lidCheckbox.state == .on)")
+    }
+
+    @objc private func keysChanged() {
+        Prefs.shared.blockBrightnessKeys = (keysCheckbox.state == .on)
+        yamiyLog("block brightness keys -> \(keysCheckbox.state == .on)")
+        NotificationCenter.default.post(name: Notification.Name("YamiyBrightnessKeyPrefChanged"), object: nil)
+    }
+
+    @objc private func externalChanged() {
+        Prefs.shared.disableExternalDisplays = (externalCheckbox.state == .on)
+        yamiyLog("disable external displays -> \(externalCheckbox.state == .on)")
+        NotificationCenter.default.post(name: Notification.Name("YamiyExternalDisplayPrefChanged"), object: nil)
+    }
+
+    @objc private func rememberChanged() {
+        Prefs.shared.rememberOwnerBrightness = (rememberCheckbox.state == .on)
+        yamiyLog("remember owner brightness -> \(rememberCheckbox.state == .on)")
+    }
+
+    @objc private func loginChanged() {
+        do {
+            if loginCheckbox.state == .on {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+            Prefs.shared.launchAtLogin = (loginCheckbox.state == .on)
+            yamiyLog("launch at login -> \(loginCheckbox.state == .on)")
+        } catch {
+            yamiyLog("launch at login change failed: \(error)")
+            refresh()
+        }
+    }
+}
+
+// MARK: - Exception log (added in 0.3.1)
+
+// AppKit catches an Objective-C exception raised while it handles a
+// menu action or a layout pass, reports it to the system log and keeps
+// the app running. That is how a window can fail to open without a
+// crash and without a line in yamiy.log. This subclass writes the
+// exception into yamiy.log as well, and marks the sidebar Settings
+// window as failed so the next click opens the plain one.
+var settingsWindowFailed = false
+
+final class YamiyApplication: NSApplication {
+    override func reportException(_ exception: NSException) {
+        settingsWindowFailed = true
+        yamiyLog("EXCEPTION \(exception.name.rawValue): \(exception.reason ?? "no reason")")
+        let stack = exception.callStackSymbols.prefix(16).joined(separator: "\n    ")
+        yamiyLog("EXCEPTION stack:\n    \(stack)")
+        super.reportException(exception)
+    }
+}
+
 // MARK: - App
 
 enum Mode { case stealth, owner }
@@ -1090,6 +1308,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var stateMenuItem: NSMenuItem!
     var settingsController: SettingsWindowController?
+    var simpleSettingsController: SimpleSettingsWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -1193,12 +1412,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func quitApp() { NSApp.terminate(nil) }
 
+    // Settings must always open. The sidebar window is tried first. If
+    // building or showing it raised an exception (see YamiyApplication),
+    // or it did not end up on screen, the plain window is used instead,
+    // and every step is written to yamiy.log.
     @objc func showSettings() {
-        if settingsController == nil { settingsController = SettingsWindowController() }
-        settingsController?.refresh()
-        settingsController?.window?.center()
+        yamiyLog("settings: open requested")
         NSApp.activate(ignoringOtherApps: true)
-        settingsController?.showWindow(nil)
+
+        if !settingsWindowFailed {
+            if settingsController == nil {
+                // Stays true if the build below raises an exception: the
+                // action is abandoned there and the next click takes the
+                // plain window.
+                settingsWindowFailed = true
+                let built = SettingsWindowController()
+                settingsController = built
+                settingsWindowFailed = false
+                yamiyLog("settings: sidebar window built")
+            }
+            if let controller = settingsController {
+                controller.refresh()
+                if controller.presentOnScreen() { return }
+                yamiyLog("settings: sidebar window not usable, opening the plain window")
+                settingsWindowFailed = true
+            }
+        }
+
+        settingsController?.window?.orderOut(nil)
+        if simpleSettingsController == nil {
+            simpleSettingsController = SimpleSettingsWindowController()
+        }
+        simpleSettingsController?.refresh()
+        simpleSettingsController?.window?.center()
+        simpleSettingsController?.showWindow(nil)
+        simpleSettingsController?.window?.orderFrontRegardless()
+        yamiyLog("settings: plain window shown")
     }
 
     func setupObservers() {
@@ -1299,6 +1548,9 @@ let sigSrc2 = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
 sigSrc2.setEventHandler { restoreAndExit() }
 sigSrc2.resume()
 
+// YamiyApplication.shared must be the first use of the shared
+// application object, so that the app instance is the subclass.
 let delegate = AppDelegate()
-NSApplication.shared.delegate = delegate
-NSApplication.shared.run()
+let app = YamiyApplication.shared
+app.delegate = delegate
+app.run()
